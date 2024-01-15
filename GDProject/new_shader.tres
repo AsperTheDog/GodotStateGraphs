@@ -1,0 +1,37 @@
+[gd_resource type="VisualShader" load_steps=3 format=3 uid="uid://bjtpnkihj0h1r"]
+
+[sub_resource type="VisualShaderNodeDerivativeFunc" id="VisualShaderNodeDerivativeFunc_uwjdo"]
+
+[sub_resource type="VisualShaderNodeCompare" id="VisualShaderNodeCompare_0wrrj"]
+
+[resource]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
+
+
+
+
+void fragment() {
+// DerivativeFunc:2
+	float n_in2p0 = 0.00000;
+	float n_out2p0 = fwidth(n_in2p0);
+
+
+// Compare:3
+	float n_in3p1 = 0.00000;
+	float n_in3p2 = 0.00001;
+	bool n_out3p0 = (abs(n_out2p0 - n_in3p1) < n_in3p2);
+
+// Output:0
+	ALPHA = (n_out3p0 ? 1.0 : 0.0);
+
+
+}
+"
+graph_offset = Vector2(-805.661, -229.878)
+nodes/fragment/0/position = Vector2(300, 100)
+nodes/fragment/2/node = SubResource("VisualShaderNodeDerivativeFunc_uwjdo")
+nodes/fragment/2/position = Vector2(-395.353, 255.679)
+nodes/fragment/3/node = SubResource("VisualShaderNodeCompare_0wrrj")
+nodes/fragment/3/position = Vector2(-100, 200)
+nodes/fragment/connections = PackedInt32Array(2, 0, 3, 0, 3, 0, 0, 1)

@@ -1,0 +1,89 @@
+[gd_scene load_steps=2 format=3 uid="uid://ds3fyqsujygjf"]
+
+[ext_resource type="Script" path="res://addons/state_machine/StateMachineUI.gd" id="1_as0og"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_as0og")
+
+[node name="GraphEdit" type="GraphEdit" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+right_disconnects = true
+show_zoom_label = true
+
+[node name="newNodePop" type="ConfirmationDialog" parent="."]
+title = "Add state"
+size = Vector2i(200, 330)
+ok_button_text = "Add"
+
+[node name="ItemList" type="ItemList" parent="newNodePop"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+metadata/_edit_use_anchors_ = true
+
+[node name="PopupMenu" type="PopupMenu" parent="."]
+size = Vector2i(105, 201)
+item_count = 9
+item_0/text = "Add State"
+item_0/id = 0
+item_1/text = ""
+item_1/id = 1
+item_1/separator = true
+item_2/text = "Cut"
+item_2/id = 2
+item_3/text = "Copy"
+item_3/id = 3
+item_4/text = "Paste"
+item_4/id = 4
+item_5/text = "Delete"
+item_5/id = 5
+item_6/text = "Duplicate"
+item_6/id = 6
+item_7/text = ""
+item_7/id = 7
+item_7/separator = true
+item_8/text = "Clear Copy Buffer"
+item_8/id = 8
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.145098, 0.145098, 0.145098, 1)
+
+[node name="selectNotif" type="Label" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "To edit a state machine, add a StateMachine to the StateMachineNode"
+horizontal_alignment = 1
+vertical_alignment = 1
