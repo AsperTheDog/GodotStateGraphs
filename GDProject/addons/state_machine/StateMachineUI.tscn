@@ -65,6 +65,18 @@ item_7/separator = true
 item_8/text = "Clear Copy Buffer"
 item_8/id = 8
 
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -132.0
+offset_top = 11.0
+offset_right = -15.0
+offset_bottom = 42.0
+grow_horizontal = 0
+text = "Reload scripts"
+
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -87,3 +99,5 @@ grow_vertical = 2
 text = "To edit a state machine, add a StateMachine to the StateMachineNode"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[connection signal="pressed" from="Button" to="." method="on_force_script_reload"]

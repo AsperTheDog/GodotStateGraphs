@@ -5,6 +5,7 @@ var smUI: Control = preload("res://addons/state_machine/StateMachineUI.tscn").in
 
 
 func _enter_tree():
+	resource_saved.connect(smUI.handle_resource_change)
 	smUI.undoRedo = get_undo_redo()
 	EditorInterface.get_selection().selection_changed.connect(on_node_selected)
 	on_node_selected()

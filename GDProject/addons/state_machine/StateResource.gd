@@ -1,23 +1,23 @@
 @tool
 class_name StateResource extends Resource
 
-signal nameUpdated
-signal scriptUpdated
+signal _name_updated
+signal _script_updated
 
 @export var name: String:
 	set(value):
 		if name == value: return
 		name = value
-		nameUpdated.emit()
+		
+		_name_updated.emit()
 		
 @export var state: Script:
 	set(value):
-		if state == value: return
 		if _check_state(value):
 			state = value
-			scriptUpdated.emit()
+			_script_updated.emit()
 
-var approved: bool = false
+var id: int = -1
 
 var hasOnEnter: bool = false
 var hasOnExit: bool = false
@@ -30,14 +30,14 @@ func _init():
 	_check_state(state)
 
 
-func _check_state(stateArg: Script):
+func _check_state(stateArg: Script) -> bool:
 	if stateArg == null: return true
 	var elem = stateArg.new()
 	if not elem is State:
-		printerr("Script does not extend State class")
+		push_error("The script " + stateArg.resource_path + " does not extend State class")
 		return false
 	if "ExitEvents" not in elem or not elem.ExitEvents is Dictionary or elem.ExitEvents.size() == 0:
-		printerr("The script " + stateArg.resource_path + " does not have an ExitEvents enumerator or is empty")
+		push_error("The script " + stateArg.resource_path + " does not have an ExitEvents enumerator or is empty")
 		return false
 	var hasOnCheck: bool = false
 	var counts := {"_on_check": 0, "_on_enter": 0, "_on_exit": 0, "_on_frame": 0}
@@ -53,12 +53,30 @@ func _check_state(stateArg: Script):
 		if "_on_frame" == method['name']:
 			hasOnFrame = counts[method['name']] == 2
 	if not hasOnCheck:
-		printerr("The script " + stateArg.resource_path + " does not have the _on_check method overriden")
+		push_error("The script " + stateArg.resource_path + " does not have the _on_check method overriden")
 		return false
 	exitEvents.clear()
 	for event in elem.ExitEvents.keys():
 		if elem.ExitEvents[event] != exitEvents.size():
-			printerr("The script " + stateArg.resource_path + " has an incompatible ExitEvents enum. Do not assign custom numbers to the fields")
+			push_error("The script " + stateArg.resource_path + " has an incompatible ExitEvents enum. Do not assign custom numbers to the fields")
 			return false
 		exitEvents.append(event)
 	return true
+
+
+func is_valid():
+	return state != null and name.length() > 0
+
+
+func _get(property: StringName):
+	if property == "id":
+		return id
+
+
+func _set(property, value):
+	if property == "id":
+		id = value
+
+
+func _get_property_list():
+	return [{"name": "id", "type": TYPE_INT, "usage": PROPERTY_USAGE_NO_EDITOR}]

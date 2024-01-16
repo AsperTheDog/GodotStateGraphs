@@ -47,10 +47,16 @@ var targetResource: StateMachine = null:
 	set(value):
 		if targetResource == value: return
 		if targetResource != null:
-			targetResource._updated_state_node.disconnect(on_state_changed)
+			targetResource._states_added.disconnect(on_states_added)
+			targetResource._states_deleted.disconnect(on_states_deleted)
+			targetResource._state_name_changed.disconnect(on_state_change_name)
+			targetResource._state_script_changed.disconnect(on_state_change_script)
 		targetResource = value
 		if targetResource != null: 
-			targetResource._updated_state_node.connect(on_state_changed)
+			targetResource._states_added.connect(on_states_added)
+			targetResource._states_deleted.connect(on_states_deleted)
+			targetResource._state_name_changed.connect(on_state_change_name)
+			targetResource._state_script_changed.connect(on_state_change_script)
 		if is_node_ready(): configure()
 
 var undoRedo: EditorUndoRedoManager
@@ -100,6 +106,15 @@ func _input(event):
 		mouse_pos = event.position - global_position
 
 
+func handle_resource_change(resource: Resource):
+	if targetResource == null: return
+	for state in targetResource.states:
+		if state == null or state.state == null: continue
+		if state.state.resource_path == resource.resource_path:
+			state.state = state.state
+			break
+
+
 func clean():
 	graph.clear_connections()
 	selected_nodes.clear()
@@ -117,21 +132,27 @@ func configure():
 	if targetResource == null: return
 	$ColorRect.hide()
 	$ColorRect.mouse_filter = MOUSE_FILTER_IGNORE
-	for state in targetResource.states:
-		$newNodePop/ItemList.add_item(state.name)
-	
-	targetResource._startingNode.position_offset = targetResource._graphStartingNode.pos
-	graph.add_child(targetResource._startingNode)
+	populate_item_list()
+	var newStartingNode := StateNode.create_starting(targetResource._startingNode.output, targetResource._startingNode.pos)
+	graph.add_child(newStartingNode)
+	var invalid_nodes: Array[int] = []
 	for node in targetResource._graphData:
+		if not targetResource._find_state_from_id(node.type) in targetResource.get_valid_states():
+			invalid_nodes.append(node.id)
+			continue
 		create_node_action(node.type, node.pos, node.id, false)
-	if targetResource._graphStartingNode.output != -1:
-		var target := find_node_from_id(targetResource._graphStartingNode.output)
-		create_connection_action(Connection.new(-1, 0, target.id, 0), false)
+	for node_id in invalid_nodes:
+		targetResource._delete_graph_node(node_id)
+	if targetResource._startingNode.output != -1:
+		var target := find_node_from_id(targetResource._startingNode.output)
+		if target != null:
+			create_connection_action(Connection.new(-1, 0, target.id, 0), false)
 	for node in targetResource._graphData:
 		for index in node.outputs.size():
 			if node.outputs[index] == -1: continue
 			var target := find_node_from_id(node.outputs[index])
-			create_connection_action(Connection.new(node.id, index, target.id, 0), false)
+			if target != null:
+				create_connection_action(Connection.new(node.id, index, target.id, 0), false)
 
 
 func set_target(node: StateMachineNode):
@@ -145,8 +166,57 @@ func on_target_SFM_assigned():
 	else: targetResource = target.stateMachine
 
 
-func on_state_changed(index: int):
-	pass
+func on_states_added(ids: Array[int]):
+	populate_item_list()
+
+
+func on_states_deleted(ids: Array[int]):
+	for node: StateNode in graph.get_children():
+		if node.type in ids:
+			delete_node_no_undo(node.id)
+	populate_item_list()
+
+
+func on_state_change_name(id: int):
+	for node in graph.get_children():
+		if node.type == id:
+			node.title = targetResource._find_state_from_id(id).name
+	populate_item_list()
+
+
+func on_state_change_script(id: int):
+	var state := targetResource._find_state_from_id(id)
+	if not state.is_valid(): 
+		on_states_deleted([id])
+		return
+	var states := targetResource.get_valid_states()
+	for node in graph.get_children():
+		if node.type == id:
+			node.reconfigure(id, state.name, state.exitEvents)
+			prune_excess_connections(node)
+	populate_item_list()
+
+
+func prune_excess_connections(node: StateNode):
+	for connection in graph.get_connection_list():
+		if connection['from_node'] == node.name and connection["from_port"] >= node.outputs.size():
+			var to_node := find_node_from_name(connection['to_node'])
+			var oldConn := Connection.new(node.id, connection['from_port'], to_node.id, connection['to_port'])
+			delete_connection_action(oldConn)
+
+
+func on_force_script_reload():
+	for state in targetResource.states:
+		if state != null: state.state = state.state
+
+
+var item_ids: Array[int] = []
+func populate_item_list():
+	$newNodePop/ItemList.clear()
+	item_ids.clear()
+	for state in targetResource.get_valid_states():
+		$newNodePop/ItemList.add_item(state.name)
+		item_ids.append(state.id)
 
 
 #region Graph API
@@ -216,12 +286,12 @@ func on_connection_to_empty(from_node: StringName, from_port: int, release_posit
 
 
 func on_context_request():
-	var canModify: bool = selected_nodes.size() == 1 and selected_nodes[0] == targetResource._startingNode
-	$PopupMenu.set_item_disabled(2, canModify)
-	$PopupMenu.set_item_disabled(3, canModify)
+	var shouldDisable: bool = selected_nodes.size() == 1 and selected_nodes[0].id == -2
+	$PopupMenu.set_item_disabled(2, shouldDisable)
+	$PopupMenu.set_item_disabled(3, shouldDisable)
 	$PopupMenu.set_item_disabled(4, clipboard.is_empty())
-	$PopupMenu.set_item_disabled(5, canModify)
-	$PopupMenu.set_item_disabled(6, canModify)
+	$PopupMenu.set_item_disabled(5, shouldDisable)
+	$PopupMenu.set_item_disabled(6, shouldDisable)
 	$PopupMenu.set_item_disabled(8, clipboard.is_empty())
 	$PopupMenu.position = mouse_pos + get_screen_position()
 	$PopupMenu.show()
@@ -255,7 +325,7 @@ var selectedItem: int = 0
 func on_item_selected(index: int):
 	if not $newNodePop/ItemList.get_selected_items().is_empty():
 		dialogAddButton.disabled = false
-		selectedItem = index
+		selectedItem = item_ids[index]
 
 
 func on_confirmed():
@@ -348,22 +418,36 @@ func move_node_action(id: int, pos: Vector2):
 	node.position_offset = pos
 
 
-func create_node_action(state: int, pos: Vector2, id: int, update_data: bool = true):
-	if find_node_from_id(id) != null: printerr("Duplicated id when creating a node, this should not happen...")
-	var newNode := targetResource._stateNodes[state].duplicate()
+func create_node_action(stateID: int, pos: Vector2, id: int, update_data: bool = true):
+	if find_node_from_id(id) != null: 
+		push_error("Duplicated id when creating a node, if you see this report it as a bug")
+	var states := targetResource.get_valid_states()
+	var state := targetResource._find_state_from_id(stateID)
+	if state == null or not state.is_valid(): 
+		push_error("Attempted to create node of invalid state %s" % state)
+		return
+	var newNode := StateNode.create(stateID, state.name, state.exitEvents, pos)
 	newNode.id = id
 	graph.add_child(newNode)
 	newNode.owner = self
-	newNode.position_offset = pos
-	newNode.outputs = targetResource._stateNodes[state].outputs.duplicate()
-	newNode.type = targetResource._stateNodes[state].type
 	if update_data:
 		targetResource._update_graph_node(newNode)
 
 
+func delete_node_no_undo(id: int):
+	var node := find_node_from_id(id)
+	for connection in graph.get_connection_list():
+		if connection['from_node'] == node.name or connection['to_node'] == node.name:
+			var from_node_id := find_node_from_name(connection['from_node']).id
+			var to_node_id := find_node_from_name(connection['to_node']).id
+			var newConn: Connection = Connection.new(from_node_id, connection['from_port'], to_node_id, connection['to_port'])
+			delete_connection_action(newConn, false)
+	delete_node_action(id)
+
+
 func delete_node_action(id: int, update_data: bool = true):
 	var node := find_node_from_id(id)
-	if node == targetResource._startingNode: return
+	if node.id == -2: return
 	node.queue_free()
 	if node in selected_nodes:
 		selected_nodes.erase(node)
@@ -449,7 +533,6 @@ func duplicate_nodes(nodes: Array[ClipboardNode], offset: Vector2, is_paste: boo
 
 
 func find_node_from_id(nodeID: int) -> StateNode:
-	if nodeID == -1: return targetResource._startingNode
 	for node in graph.get_children():
 		if node.id == nodeID: return node
 	return null
@@ -461,8 +544,8 @@ func find_node_from_name(nodeName: StringName) -> StateNode:
 
 func get_node_name(source) -> String:
 	if source is StateNode:
-		return String(source.get_path().get_name(source.get_path().get_name_count() - 1))
+		return source.name
 	if source is int:
 		var node := find_node_from_id(source)
-		return String(node.get_path().get_name(node.get_path().get_name_count() - 1))
+		return node.name
 	return ""

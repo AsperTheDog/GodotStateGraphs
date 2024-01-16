@@ -1,10 +1,62 @@
-[gd_scene load_steps=3 format=3 uid="uid://c0ygenh3j4ymq"]
+[gd_scene load_steps=15 format=3 uid="uid://c0ygenh3j4ymq"]
 
 [ext_resource type="Script" path="res://addons/state_machine/StateMachineNode.gd" id="1_xqcoi"]
-[ext_resource type="Resource" uid="uid://clwto2adbaile" path="res://test.tres" id="2_pjqae"]
+[ext_resource type="Script" path="res://addons/state_machine/StateMachine.gd" id="2_honl6"]
+[ext_resource type="Script" path="res://addons/state_machine/StateResource.gd" id="3_g1cok"]
+[ext_resource type="Script" path="res://example/firstState.gd" id="4_shq8k"]
+[ext_resource type="Script" path="res://example/secondState.gd" id="5_lofoc"]
+[ext_resource type="Script" path="res://example/thirdState.gd" id="6_oveob"]
+[ext_resource type="Script" path="res://example/fourthState.gd" id="7_trh4e"]
+[ext_resource type="Script" path="res://example/fifthState.gd" id="8_tfy34"]
+
+[sub_resource type="Resource" id="Resource_c6rti"]
+script = ExtResource("3_g1cok")
+name = "first"
+state = ExtResource("4_shq8k")
+id = 0
+
+[sub_resource type="Resource" id="Resource_53cn6"]
+script = ExtResource("3_g1cok")
+name = "second"
+state = ExtResource("5_lofoc")
+id = 1
+
+[sub_resource type="Resource" id="Resource_3u5kc"]
+script = ExtResource("3_g1cok")
+name = "third"
+state = ExtResource("6_oveob")
+id = 2
+
+[sub_resource type="Resource" id="Resource_64vph"]
+script = ExtResource("3_g1cok")
+name = "fourth"
+state = ExtResource("7_trh4e")
+id = 3
+
+[sub_resource type="Resource" id="Resource_ooygv"]
+script = ExtResource("3_g1cok")
+name = "fifth"
+state = ExtResource("8_tfy34")
+id = 4
+
+[sub_resource type="Resource" id="Resource_h1ybb"]
+script = ExtResource("2_honl6")
+states = Array[ExtResource("3_g1cok")]([SubResource("Resource_c6rti"), SubResource("Resource_53cn6"), SubResource("Resource_3u5kc"), SubResource("Resource_64vph"), SubResource("Resource_ooygv")])
+states/starting/position = Vector2(20, 160)
+states/starting/output = 20
+states/20/type = 0
+states/20/position = Vector2(441.01, 168.372)
+states/20/outputs = Array[int]([21, -1])
+states/21/type = 0
+states/21/position = Vector2(820, 260)
+states/21/outputs = Array[int]([22, -1])
+states/22/type = 0
+states/22/position = Vector2(1244.93, 395.973)
+states/22/outputs = Array[int]([-1, -1])
 
 [node name="Node2D" type="Node2D"]
 
 [node name="StateMachineNode" type="Node" parent="."]
 script = ExtResource("1_xqcoi")
-stateMachine = ExtResource("2_pjqae")
+stateMachine = SubResource("Resource_h1ybb")
+auto_restart = true

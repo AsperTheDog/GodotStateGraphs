@@ -1,7 +1,11 @@
 @tool
 class_name StateMachine extends Resource
 
-signal _updated_state_node(index: int)
+signal _states_deleted(ids: Array[int])
+signal _states_added(ids: Array[int])
+
+signal _state_name_changed(id: int)
+signal _state_script_changed(id: int)
 
 class _NodeData:
 	var pos: Vector2
@@ -15,74 +19,37 @@ class _StartingNode:
 
 @export var states: Array[StateResource] = []:
 	set(value):
+		var added: Array[int] = []
+		for elem in value:
+			if not elem in states and elem != null:
+				if elem.id == -1:
+					while _find_state_from_id(stateIDcounter) != null and stateIDcounter not in added: 
+						stateIDcounter += 1
+					elem.id = stateIDcounter
+				elem._name_updated.connect(_on_state_name_changed.bind(elem.id))
+				elem._script_updated.connect(_on_state_script_changed.bind(elem.id))
+				added.append(elem.id)
+		var deleted: Array[int] = []
+		for elem in states:
+			if not elem in value and elem != null:
+				elem._name_updated.disconnect(_on_state_name_changed)
+				elem._script_updated.disconnect(_on_state_script_changed)
+				deleted.append(elem.id)
 		states = value
-		_setup_change_detection()
-		_rebuild_nodes()
+		if not added.is_empty(): _states_added.emit(added)
+		if not deleted.is_empty(): _states_deleted.emit(deleted)
 		emit_changed()
 
-var _startingNode := StateNode.new():
-	set(value):
-		_startingNode = value
-		if _startingNode == null or not is_instance_valid(_startingNode):
-			_startingNode = _build_starting_node()
-var _stateNodes: Array[StateNode] = []
-
-var _graphStartingNode := _StartingNode.new()
+var _startingNode := _StartingNode.new()
 var _graphData: Array[_NodeData] = []
 
-
-func _setup_change_detection():
-	for index in states.size():
-		var elem := states[index]
-		if elem != null:
-			if not elem.nameUpdated.is_connected(_on_state_name_update): 
-				elem.nameUpdated.connect(_on_state_name_update.bind(index))
-			if not elem.scriptUpdated.is_connected(_on_state_script_update): 
-				elem.scriptUpdated.connect(_on_state_script_update.bind(index))
-
-
-func _on_state_name_update(index: int):
-	_stateNodes[index].title = states[index].name
-	_updated_state_node.emit(index)
-
-
-func _on_state_script_update(index: int):
-	_stateNodes[index] = _build_node(index)
-	_updated_state_node.emit(index)
-
-
-func _rebuild_nodes():
-	_stateNodes.clear()
-	_startingNode = _build_starting_node()
-	for state in states.size():
-		if states[state] == null: continue
-		_stateNodes.append(_build_node(state))
-
-
-func _build_starting_node():
-	var newNode := StateNode.new()
-	newNode.type = -1
-	newNode.title = "START"
-	newNode.events = []
-	newNode.position_offset = _graphStartingNode.pos
-	newNode.configure_starting()
-	newNode.outputs[0] = _graphStartingNode.output
-	return newNode
-
-
-func _build_node(index: int):
-	var newNode := StateNode.new()
-	newNode.type = index
-	newNode.title = states[index].name
-	newNode.events = states[index].exitEvents
-	newNode.configure(index)
-	return newNode
+static var stateIDcounter: int = 0
 
 
 func _update_graph_node(node: StateNode):
 	if node.id == -1:
-		_graphStartingNode.pos = node.position_offset
-		_graphStartingNode.output = node.outputs[0]
+		_startingNode.pos = node.position_offset
+		_startingNode.output = node.outputs[0]
 	else:
 		var dataNode := _find_node_from_id(node.id)
 		if dataNode == null:
@@ -110,9 +77,9 @@ func _get(property: StringName):
 			var prop = property.get_slice('/', 2)
 			match prop:
 				"position": 
-					return _graphStartingNode.pos
+					return _startingNode.pos
 				"output":
-					return _graphStartingNode.output
+					return _startingNode.output
 			return null
 		var idStr := property.get_slice('/', 1)
 		if not idStr.is_valid_int():
@@ -140,10 +107,10 @@ func _set(property: StringName, value):
 			var prop = property.get_slice('/', 2)
 			match prop:
 				"position":
-					_graphStartingNode.pos = value
+					_startingNode.pos = value
 					return true
 				"output":
-					_graphStartingNode.output = value
+					_startingNode.output = value
 					return true
 			return false
 		var idStr := property.get_slice('/', 1)
@@ -182,19 +149,27 @@ func _get_property_list():
 	list.append(startingOutputEntry)
 	for node in _graphData:
 		var root: String = "states/%s/" % node.id
-		var posEntry := template.duplicate()
-		posEntry["name"] = root + "position"
-		posEntry["type"] = TYPE_VECTOR2
-		list.append(posEntry)
 		var typeEntry := template.duplicate()
 		typeEntry["name"] = root + "type"
 		typeEntry["type"] = TYPE_INT
 		list.append(typeEntry)
+		var posEntry := template.duplicate()
+		posEntry["name"] = root + "position"
+		posEntry["type"] = TYPE_VECTOR2
+		list.append(posEntry)
 		var outputEntry := template.duplicate()
 		outputEntry["name"] = root + "outputs"
 		outputEntry["type"] = TYPE_PACKED_INT32_ARRAY
 		list.append(outputEntry)
 	return list
+
+
+func _find_state_from_id(id: int) -> StateResource:
+	for state in states:
+		if state == null: continue
+		if state.id == id:
+			return state
+	return null
 
 
 func _find_node_from_id(id: int) -> _NodeData:
@@ -214,3 +189,15 @@ func _save_resource():
 func _save():
 	flaggedForSave = false
 	ResourceSaver.save(self, resource_path)
+
+
+func _on_state_name_changed(id: int):
+	_state_name_changed.emit(id)
+
+
+func _on_state_script_changed(id: int):
+	_state_script_changed.emit(id)
+
+
+func get_valid_states() -> Array[StateResource]:
+	return states.filter(func(state: StateResource): return state != null and state.is_valid())
