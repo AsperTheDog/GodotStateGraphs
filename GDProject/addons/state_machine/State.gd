@@ -1,5 +1,9 @@
 class_name State extends RefCounted
 
+var state_name: String
+var state_id: int
+var node_id: int
+
 
 func _on_enter(_stateMachine: StateMachineNode):
 	pass

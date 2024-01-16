@@ -7,7 +7,7 @@ enum RateType {PROCESS, PHYSICS_PROCESS, CUSTOM}
 enum OutputType {VALID, INVALID, NULL}
 
 class StateInstance:
-	var state_id: int
+	var node_data: StateMachine.NodeData
 	var base_node: State
 	var connected_nodes: Array[StateInstance] = []
 
@@ -38,6 +38,10 @@ func _ready():
 	for state in stateMachine._graphData:
 		var newStateInst := StateInstance.new()
 		newStateInst.base_node = stateMachine._find_state_from_id(state.type).state.new()
+		newStateInst.node_data = state
+		newStateInst.base_node.node_id = state.id
+		newStateInst.base_node.state_id = state.type
+		newStateInst.base_node.state_name = stateMachine._find_state_from_id(state.type).name
 		_stateInstances[state.id] = newStateInst
 	for state in stateMachine._graphData:
 		for output in state.outputs:

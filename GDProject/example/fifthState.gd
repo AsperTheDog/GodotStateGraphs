@@ -13,7 +13,7 @@ func _on_enter(stateMachine: StateMachineNode):
 
 
 func _on_exit(stateMachine: StateMachineNode):
-	print("FOURTH STATE END COUNTING WITH VALUE ", counter)
+	print("FIFTH STATE END COUNTING WITH VALUE ", counter, ", NODE DATA (%s, %s, %s)" % [node_id, state_id, state_name])
 
 
 func _on_check(stateMachine: StateMachineNode):

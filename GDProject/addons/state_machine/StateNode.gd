@@ -24,24 +24,15 @@ func _get_event_label(event) -> Label:
 func configure(newID: int):
 	id = newID
 	set_container()
-	var input: Label = Label.new()
-	input.text = ""
-	input.autowrap_mode = TextServer.AUTOWRAP_OFF
-	var sep: HSeparator = HSeparator.new()
-	sep.name = "sep"
-	sep.set("theme_override_constants/separation", 20) 
-	add_child(input)
-	add_child(sep)
-	set_slot_enabled_left(0, true)
-	set_slot_color_left(0, Color.ROYAL_BLUE)
-	
-	var counter: int = 2
+	var counter: int = 0
 	for event in events:
 		add_child(_get_event_label(event))
 		set_slot_enabled_right(counter, true)
 		set_slot_color_right(counter, Color.DEEP_SKY_BLUE)
 		counter += 1
 		outputs.append(-1)
+	set_slot_enabled_left(0, true)
+	set_slot_color_left(0, Color.ROYAL_BLUE)
 
 
 func configure_starting():
@@ -55,10 +46,10 @@ func configure_starting():
 	outputs.append(-1)
 
 
-func reconfigure(type: int, newTitle: String, newEvents: Array[String]):
-	id = type
+func reconfigure(newType: int, newTitle: String, newEvents: Array[String]):
+	type = newType
 	title = newTitle
-	var counter: int = 2
+	var counter: int = 0
 	for event in events:
 		var node = get_node(event)
 		remove_child(get_node(event))
@@ -74,6 +65,8 @@ func reconfigure(type: int, newTitle: String, newEvents: Array[String]):
 			newOutputs.append(-1)
 		else:
 			newOutputs.append(outputs[newOutputs.size()])
+	set_slot_enabled_left(0, true)
+	set_slot_color_left(0, Color.ROYAL_BLUE)
 	outputs = newOutputs
 
 

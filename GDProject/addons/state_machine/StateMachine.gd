@@ -7,7 +7,7 @@ signal _states_added(ids: Array[int])
 signal _state_name_changed(id: int)
 signal _state_script_changed(id: int)
 
-class _NodeData:
+class NodeData:
 	var pos: Vector2
 	var type: int
 	var id: int
@@ -41,7 +41,7 @@ class _StartingNode:
 		emit_changed()
 
 var _startingNode := _StartingNode.new()
-var _graphData: Array[_NodeData] = []
+var _graphData: Array[NodeData] = []
 
 static var stateIDcounter: int = 0
 
@@ -53,7 +53,7 @@ func _update_graph_node(node: StateNode):
 	else:
 		var dataNode := _find_node_from_id(node.id)
 		if dataNode == null:
-			_graphData.append(_NodeData.new())
+			_graphData.append(NodeData.new())
 			dataNode = _graphData.back()
 			dataNode.id = node.id
 		dataNode.pos = node.position_offset
@@ -87,7 +87,7 @@ func _get(property: StringName):
 		var id := idStr.to_int()
 		var node := _find_node_from_id(id)
 		if node == null:
-			_graphData.append(_NodeData.new())
+			_graphData.append(NodeData.new())
 			node = _graphData.back()
 			node.id = id
 		var prop = property.get_slice('/', 2)
@@ -119,7 +119,7 @@ func _set(property: StringName, value):
 		var id := idStr.to_int()
 		var node := _find_node_from_id(id)
 		if node == null:
-			_graphData.append(_NodeData.new())
+			_graphData.append(NodeData.new())
 			node = _graphData.back()
 			node.id = id
 		var prop = property.get_slice('/', 2)
@@ -172,7 +172,7 @@ func _find_state_from_id(id: int) -> StateResource:
 	return null
 
 
-func _find_node_from_id(id: int) -> _NodeData:
+func _find_node_from_id(id: int) -> NodeData:
 	for node in _graphData:
 		if node.id == id: 
 			return node

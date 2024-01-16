@@ -42,17 +42,20 @@ id = 4
 [sub_resource type="Resource" id="Resource_h1ybb"]
 script = ExtResource("2_honl6")
 states = Array[ExtResource("3_g1cok")]([SubResource("Resource_c6rti"), SubResource("Resource_53cn6"), SubResource("Resource_3u5kc"), SubResource("Resource_64vph"), SubResource("Resource_ooygv")])
-states/starting/position = Vector2(20, 160)
+states/starting/position = Vector2(-40, 200)
 states/starting/output = 20
 states/20/type = 0
-states/20/position = Vector2(441.01, 168.372)
-states/20/outputs = Array[int]([21, -1])
-states/21/type = 0
-states/21/position = Vector2(820, 260)
-states/21/outputs = Array[int]([22, -1])
-states/22/type = 0
-states/22/position = Vector2(1244.93, 395.973)
-states/22/outputs = Array[int]([-1, -1])
+states/20/position = Vector2(220, 160)
+states/20/outputs = Array[int]([0, 1])
+states/0/type = 1
+states/0/position = Vector2(480, 80)
+states/0/outputs = Array[int]([2])
+states/1/type = 2
+states/1/position = Vector2(480, 280)
+states/1/outputs = Array[int]([2])
+states/2/type = 3
+states/2/position = Vector2(760, 180)
+states/2/outputs = Array[int]([-1])
 
 [node name="Node2D" type="Node2D"]
 
