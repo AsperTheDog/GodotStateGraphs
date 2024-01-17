@@ -12,6 +12,7 @@ class NodeData:
 	var type: int
 	var id: int
 	var outputs: Array[int]
+	var exports: Dictionary
 
 class _StartingNode:
 	var pos: Vector2 = Vector2.ZERO
@@ -20,8 +21,11 @@ class _StartingNode:
 @export var states: Array[StateResource] = []:
 	set(value):
 		var added: Array[int] = []
-		for elem in value:
-			if not elem in states and elem != null:
+		for index in value.size():
+			if value[index] == null:
+				value[index] = StateResource.new()
+			var elem = value[index]
+			if not elem in states:
 				if elem.id == -1:
 					while _find_state_from_id(stateIDcounter) != null and stateIDcounter not in added: 
 						stateIDcounter += 1
@@ -57,8 +61,9 @@ func _update_graph_node(node: StateNode):
 			dataNode = _graphData.back()
 			dataNode.id = node.id
 		dataNode.pos = node.position_offset
-		dataNode.type = node.type
+		dataNode.type = node.resource.id
 		dataNode.outputs = node.outputs.duplicate()
+		dataNode.exports = node.properties
 	emit_changed()
 	_save_resource()
 
@@ -98,6 +103,10 @@ func _get(property: StringName):
 				return node.type
 			"outputs":
 				return node.outputs
+			"exports":
+				var exportName = property.get_slice('/', 3)
+				if exportName not in node.exports: return null
+				return node.exports[exportName].value
 	return null
 
 
@@ -133,6 +142,14 @@ func _set(property: StringName, value):
 			"outputs":
 				node.outputs = value
 				return true
+			"exports":
+				var exportName = property.get_slice('/', 3)
+				var state := _find_state_from_id(node.type)
+				if exportName not in state.exportVariables: return false
+				node.exports[exportName] = state.exportVariables[exportName].duplicate()
+				node.exports[exportName].value = value
+				node.exports[exportName].dirty = node.exports[exportName].value != state.exportVariables[exportName].value
+				return true
 	return false
 
 
@@ -161,6 +178,12 @@ func _get_property_list():
 		outputEntry["name"] = root + "outputs"
 		outputEntry["type"] = TYPE_PACKED_INT32_ARRAY
 		list.append(outputEntry)
+		for export in node.exports.values():
+			if not export.dirty: continue
+			var exportEntry := template.duplicate()
+			exportEntry["name"] = root + "exports/" + export.name
+			exportEntry["type"] = export.type
+			list.append(exportEntry)
 	return list
 
 

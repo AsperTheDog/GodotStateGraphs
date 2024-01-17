@@ -5,22 +5,19 @@ enum ExitEvents {
 	Second
 }
 
-@export var example1: String = "adawd"
-@export var example2: int
-@export var example3: float
-@export var example4: bool
+@export var customText: String
 
 var counter := 0.0
 
-func _on_enter(stateMachine: StateMachineNode):
+func _on_enter(_stateMachine: StateMachineNode):
 	counter = 0
 
 
-func _on_exit(stateMachine: StateMachineNode):
-	print("FIRST STATE END COUNTING WITH VALUE ", counter, ", NODE DATA (%s, %s, %s)" % [node_id, state_id, state_name])
+func _on_exit(_stateMachine: StateMachineNode):
+	print("Exiting node said the following: ", customText)
 
 
-func _on_check(stateMachine: StateMachineNode):
+func _on_check(_stateMachine: StateMachineNode):
 	if counter >= 1:
 		return ExitEvents.First if randf() > 0.5 else ExitEvents.Second
 

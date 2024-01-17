@@ -2,23 +2,44 @@
 
 [ext_resource type="Script" path="res://addons/state_machine/StateMachineNode.gd" id="1_xqcoi"]
 [ext_resource type="Script" path="res://addons/state_machine/StateMachine.gd" id="2_honl6"]
-[ext_resource type="Script" path="res://addons/state_machine/StateResource.gd" id="3_g1cok"]
-[ext_resource type="Script" path="res://example/firstState.gd" id="4_shq8k"]
+[ext_resource type="Script" path="res://addons/state_machine/StateResource.gd" id="3_077jf"]
+[ext_resource type="Script" path="res://example/firstState.gd" id="4_80j7u"]
 
-[sub_resource type="Resource" id="Resource_c6rti"]
-script = ExtResource("3_g1cok")
-name = "first"
-state = ExtResource("4_shq8k")
+[sub_resource type="Resource" id="Resource_m1sb7"]
+script = ExtResource("3_077jf")
+name = "state"
+state = ExtResource("4_80j7u")
 id = 0
 
 [sub_resource type="Resource" id="Resource_h1ybb"]
 script = ExtResource("2_honl6")
-states = Array[ExtResource("3_g1cok")]([SubResource("Resource_c6rti")])
-states/starting/position = Vector2(-180, 240)
-states/starting/output = 20
-states/20/type = 0
-states/20/position = Vector2(300, 240)
-states/20/outputs = Array[int]([-1, -1])
+states = Array[ExtResource("3_077jf")]([SubResource("Resource_m1sb7")])
+states/starting/position = Vector2(-520, 680)
+states/starting/output = 0
+states/0/type = 0
+states/0/position = Vector2(-260, 620)
+states/0/outputs = Array[int]([1, 2])
+states/0/exports/customText = "first"
+states/1/type = 0
+states/1/position = Vector2(120, 520)
+states/1/outputs = Array[int]([3, 2])
+states/1/exports/customText = "second"
+states/3/type = 0
+states/3/position = Vector2(520, 420)
+states/3/outputs = Array[int]([10, 2])
+states/3/exports/customText = "third"
+states/2/type = 0
+states/2/position = Vector2(1360, 660)
+states/2/outputs = Array[int]([-1, -1])
+states/2/exports/customText = "fail"
+states/9/type = 0
+states/9/position = Vector2(812.928, 607.019)
+states/9/outputs = Array[int]([-1, -1])
+states/9/exports/customText = "third"
+states/10/type = 0
+states/10/position = Vector2(960, 320)
+states/10/outputs = Array[int]([9, 2])
+states/10/exports/customText = "fourth"
 
 [node name="Node2D" type="Node2D"]
 

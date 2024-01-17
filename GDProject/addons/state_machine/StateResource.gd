@@ -9,14 +9,20 @@ class ExportElement:
 	var name: String
 	var type: int
 	var value
+	var dirty: bool = false
 	
 	func _init(name: String, type: int, defaultValue):
 		self.name = name
 		self.type = type
 		self.value = defaultValue
+	
+	func duplicate() -> ExportElement:
+		var newRes := ExportElement.new(name, type, value)
+		newRes.dirty = dirty
+		return newRes
 
 
-@export var name: String:
+@export var name: String = "":
 	set(value):
 		if name == value: return
 		name = value
@@ -80,6 +86,8 @@ func _check_state(stateArg: Script) -> bool:
 		and property["usage"] & PROPERTY_USAGE_STORAGE == PROPERTY_USAGE_STORAGE \
 		and property["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE == PROPERTY_USAGE_SCRIPT_VARIABLE:
 			exportVariables[property["name"]] = ExportElement.new(property["name"], property["type"], elem.get(property["name"]))
+	if name == "":
+		name = stateArg.resource_path.get_file().trim_suffix(".gd")
 	return true
 
 
@@ -99,3 +107,4 @@ func _set(property, value):
 
 func _get_property_list():
 	return [{"name": "id", "type": TYPE_INT, "usage": PROPERTY_USAGE_NO_EDITOR}]
+	

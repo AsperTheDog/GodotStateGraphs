@@ -11,7 +11,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("1_as0og")
-something = 0.0
 
 [node name="GraphEdit" type="GraphEdit" parent="."]
 layout_mode = 1
