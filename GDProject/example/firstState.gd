@@ -5,6 +5,11 @@ enum ExitEvents {
 	Second
 }
 
+@export var example1: String = "adawd"
+@export var example2: int
+@export var example3: float
+@export var example4: bool
+
 var counter := 0.0
 
 func _on_enter(stateMachine: StateMachineNode):

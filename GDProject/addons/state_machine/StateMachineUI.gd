@@ -426,7 +426,7 @@ func create_node_action(stateID: int, pos: Vector2, id: int, update_data: bool =
 	if state == null or not state.is_valid(): 
 		push_error("Attempted to create node of invalid state %s" % state)
 		return
-	var newNode := StateNode.create(stateID, state.name, state.exitEvents, pos)
+	var newNode := StateNode.create(stateID, state.name, state.exitEvents, state.exportVariables, pos)
 	newNode.id = id
 	graph.add_child(newNode)
 	newNode.owner = self

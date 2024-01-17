@@ -20,6 +20,7 @@ class StateInstance:
 		stateMachine = value
 		state_machine_assigned.emit()
 
+@export var something: int
 @export var step_rate: RateType = RateType.PROCESS
 @export var auto_start: bool = true
 @export var auto_restart: bool = false
