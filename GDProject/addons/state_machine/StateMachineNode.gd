@@ -35,20 +35,17 @@ var _pendingOnEnter: bool = false
 func _ready():
 	if Engine.is_editor_hint(): return
 	_stateInstances.clear()
-	for state in stateMachine._graphData:
+	for node: StateMachine.NodeData in stateMachine._graphData:
 		var newStateInst := StateInstance.new()
-		newStateInst.base_node = stateMachine._find_state_from_id(state.type).state.new()
-		newStateInst.node_data = state
-		newStateInst.base_node.node_id = state.id
-		newStateInst.base_node.state_id = state.type
-		newStateInst.base_node.state_name = stateMachine._find_state_from_id(state.type).name
-		_stateInstances[state.id] = newStateInst
-	for state in stateMachine._graphData:
-		for output in state.outputs:
-			if output == -1: 
-				_stateInstances[state.id].connected_nodes.append(null)
-				continue
-			_stateInstances[state.id].connected_nodes.append(_stateInstances[output])
+		newStateInst.base_node = node.state.scriptResource.new()
+		newStateInst.node_data = node
+		newStateInst.base_node.node_id = node.id
+		newStateInst.base_node.state_id = node.state.id
+		newStateInst.base_node.state_name = node.state.name
+		_stateInstances[node.id] = newStateInst
+	for node: StateMachine.NodeData in stateMachine._graphData:
+		for output in node.outputs:
+			_stateInstances[node.id].connected_nodes.append(null if output == -1 else _stateInstances[output])
 	reset(true)
 	if auto_start:
 		start()
@@ -77,8 +74,8 @@ func pause():
 
 func reset(ignore_auto: bool = false):
 	executing = false
-	if stateMachine._startingNode.output == -1: activeState = null
-	else: activeState = _stateInstances[stateMachine._startingNode.output]
+	if stateMachine._startingNode.outputs[0] == -1: activeState = null
+	else: activeState = _stateInstances[stateMachine._startingNode.outputs[0]]
 	_pendingOnEnter = true
 	for inst in _stateInstances.values():
 		for variable in inst.node_data.exports:

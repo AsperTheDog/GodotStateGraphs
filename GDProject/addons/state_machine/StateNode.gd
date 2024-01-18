@@ -3,15 +3,7 @@ class_name StateNode extends GraphNode
 
 signal internal_var_updated
 
-var id: int
-var properties: Dictionary = {}
-var outputs: Array[int] = []
-
-var resource: StateResource
-
-
-func _to_string():
-	return "(%s) -> {id: %s, type: %s, position: %s, outputs: %s}" % [get_instance_id(), id, resource.id, position_offset, outputs]
+var resource: StateMachine.NodeData
 
 
 func _get_event_label(event) -> Label:
@@ -24,28 +16,25 @@ func _get_event_label(event) -> Label:
 	return field
 
 
-func configure(newID: int):
-	id = newID
+func configure():
 	_set_container()
-	if properties.is_empty():
+	if resource.exports.is_empty():
 		custom_minimum_size.x = 150
 	else:
 		custom_minimum_size.x = 250
 	var counter: int = 0
-	for event in resource.exitEvents:
+	for event in resource.state.exitEvents:
 		add_child(_get_event_label(event))
 		set_slot_enabled_right(counter, true)
 		set_slot_color_right(counter, Color.DEEP_SKY_BLUE)
 		counter += 1
-		outputs.append(-1)
 	set_slot_enabled_left(0, true)
 	set_slot_color_left(0, Color.ROYAL_BLUE)
 	_add_exports()
 
 
 func configure_starting():
-	title = resource.name
-	id = -1
+	title = "START"
 	_set_container()
 	custom_minimum_size.x = 150
 	var input: Label = Label.new()
@@ -53,11 +42,10 @@ func configure_starting():
 	input.autowrap_mode = TextServer.AUTOWRAP_OFF
 	add_child(input)
 	set_slot_enabled_right(0, true)
-	outputs.append(-1)
 
 
 func reconfigure():
-	title = resource.name
+	title = resource.state.name
 	var counter: int = 0
 	for node in get_children():
 		set_slot_enabled_right(counter, false)
@@ -66,26 +54,15 @@ func reconfigure():
 		node.queue_free()
 	custom_minimum_size = Vector2(1, 1)
 	size = Vector2(1, 1)
-	var newOutputs: Array[int] = []
 	counter = 0
-	for event in resource.exitEvents:
+	for event in resource.state.exitEvents:
 		add_child(_get_event_label(event))
 		set_slot_enabled_right(counter, true)
 		set_slot_color_right(counter, Color.DEEP_SKY_BLUE)
 		counter += 1
-		if newOutputs.size() >= outputs.size(): newOutputs.append(-1)
-		else: newOutputs.append(outputs[newOutputs.size()])
 	set_slot_enabled_left(0, true)
 	set_slot_color_left(0, Color.ROYAL_BLUE)
-	outputs = newOutputs
-	var newProperties: Dictionary = {}
-	for property in resource.exportVariables.values():
-		newProperties[property.name] = property.duplicate()
-		if property.name in properties and properties[property.name].dirty:
-			newProperties[property.name].value = properties[property.name].value
-			newProperties[property.name].dirty = true
-	properties = newProperties
-	if properties.is_empty():
+	if resource.exports.is_empty():
 		custom_minimum_size.x = 150
 	else:
 		custom_minimum_size.x = 250
@@ -102,13 +79,13 @@ func _set_container():
 
 
 func _add_exports():
-	if not properties.is_empty():
+	if not resource.exports.is_empty():
 		var sep := HSeparator.new()
 		sep.set("theme_override_constants/separation", 10)
 		sep.name = "separator"
 		add_child(sep)
 	var count := 0
-	for property in properties.values():
+	for property in resource.exports.values():
 		count += 1
 		var hbox: HBoxContainer = _get_export_field(property)
 		add_child(hbox)
@@ -118,7 +95,7 @@ func _add_exports():
 		add_child(sep)
 
 
-func _get_export_field(export: StateResource.ExportElement) -> HBoxContainer:
+func _get_export_field(export: ExportElement) -> HBoxContainer:
 	var hbox := HBoxContainer.new()
 	hbox.name = export.name
 	var label := Label.new()
@@ -128,6 +105,7 @@ func _get_export_field(export: StateResource.ExportElement) -> HBoxContainer:
 	label.clip_text = true
 	label.text = export.name
 	label.name = "label"
+	label.self_modulate = Color.GOLD if export.dirty else Color.WHITE
 	hbox.add_child(label)
 	match export.type:
 		TYPE_INT:
@@ -163,6 +141,7 @@ func _get_export_field(export: StateResource.ExportElement) -> HBoxContainer:
 			field.name = "field"
 			field.alignment = HORIZONTAL_ALIGNMENT_CENTER
 			field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			field.set_pressed_no_signal(export.value)
 			field.toggled.connect(_on_property_updated.bind(export.name))
 			hbox.add_child(field)
 	if export.dirty:
@@ -172,26 +151,20 @@ func _get_export_field(export: StateResource.ExportElement) -> HBoxContainer:
 	return hbox
 
 
-static func create(id: int, resource: StateResource, pos: Vector2 = Vector2.ZERO) -> StateNode:
+static func create(resource: StateMachine.NodeData) -> StateNode:
 	var newState := StateNode.new()
 	newState.resource = resource
-	newState.title = resource.name
-	newState.properties = {}
-	for property in resource.exportVariables.values():
-		newState.properties[property.name] = property.duplicate()
-	newState.position_offset = pos
-	newState.configure(id)
+	newState.title = resource.state.name
+	newState.position_offset = resource.pos
+	newState.configure()
 	return newState
 
 
-static func create_starting(output: int, pos: Vector2 = Vector2.ZERO) -> StateNode:
+static func create_starting(resource: StateMachine.NodeData) -> StateNode:
 	var newNode := StateNode.new()
-	newNode.resource = StateResource.new()
-	newNode.resource.id = -2
-	newNode.resource.name = "START"
-	newNode.position_offset = pos
+	newNode.resource = resource
+	newNode.position_offset = resource.pos
 	newNode.configure_starting()
-	newNode.outputs[0] = output
 	return newNode
 
 
@@ -205,16 +178,12 @@ func force_property_update(value, key):
 		TYPE_BOOL: field.set_pressed_no_signal(value)
 
 
-func _on_property_updated(value, key):
+func _on_property_updated(value, key: String):
 	_change_property_value(value, key)
 	internal_var_updated.emit()
 
 
-func _change_property_value(value, key):
-	properties[key].value = value
-	properties[key].dirty = properties[key].value != resource.exportVariables[key].value
+func _change_property_value(value, key: String):
+	resource.update_property(value, key)
 	if has_node(key):
-		if properties[key].dirty:
-			get_node(key + "/label").self_modulate = Color.GOLD
-		else:
-			get_node(key + "/label").self_modulate = Color.WHITE
+		get_node(key + "/label").self_modulate = Color.GOLD if resource.exports[key].dirty else Color.WHITE

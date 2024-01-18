@@ -22,23 +22,7 @@ class Connection:
 		return false
 
 
-class ClipboardNode:
-	var id: int
-	var pos: Vector2
-	var type: int
-	var outputs: Array[int]
-	var properties: Dictionary
-	
-	func _init(id: int, pos: Vector2, type: int, outputs: Array[int], properties: Dictionary):
-		self.id = id
-		self.pos = pos
-		self.type = type
-		self.outputs = outputs.duplicate()
-		self.properties = properties.duplicate(true)
-
-
-var clipboard: Array[ClipboardNode] = []
-
+var clipboard: Array[StateMachine.NodeData] = []
 
 var target: StateMachineNode = null:
 	set(value):
@@ -111,15 +95,16 @@ func _input(event):
 func handle_resource_change(resource: Resource):
 	if targetResource == null: return
 	for state in targetResource.states:
-		if state == null or state.state == null: continue
-		if state.state.resource_path == resource.resource_path:
-			state.state = state.state
+		if state == null or state.scriptResource == null: continue
+		if state.scriptResource.resource_path == resource.resource_path:
+			state.scriptResource = state.scriptResource # Call setter to reevaluate script
 			break
 
 
 func clean():
 	graph.clear_connections()
 	selected_nodes.clear()
+	clipboard.clear()
 	for node in graph.get_children(): 
 		graph.remove_child(node)
 		node.queue_free()
@@ -135,29 +120,28 @@ func configure():
 	$ColorRect.hide()
 	$ColorRect.mouse_filter = MOUSE_FILTER_IGNORE
 	populate_item_list()
-	var newStartingNode := StateNode.create_starting(targetResource._startingNode.output, targetResource._startingNode.pos)
+	var newStartingNode := StateNode.create_starting(targetResource._startingNode)
 	graph.add_child(newStartingNode)
 	var invalid_nodes: Array[int] = []
-	for node in targetResource._graphData:
-		if not targetResource._find_state_from_id(node.type) in targetResource.get_valid_states():
-			invalid_nodes.append(node.id)
+	for nodeDataElem in targetResource._graphData:
+		if not nodeDataElem.state in targetResource.get_valid_states():
+			invalid_nodes.append(nodeDataElem.id)
 			continue
-		var newNode := create_node_action(node.type, node.pos, node.id, node.exports, false)
-		for export in node.exports.values():
-			if export.dirty:
-				newNode.force_property_update(export.value, export.name)
+		create_node_action(nodeDataElem)
 	for node_id in invalid_nodes:
-		targetResource._delete_graph_node(node_id)
-	if targetResource._startingNode.output != -1:
-		var target := find_node_from_id(targetResource._startingNode.output)
+		targetResource._delete_node_resource(node_id)
+	if targetResource._startingNode.outputs[0] != -1:
+		var target := find_node_from_id(targetResource._startingNode.outputs[0])
 		if target != null:
-			create_connection_action(Connection.new(-1, 0, target.id, 0), false)
+			create_connection_action(Connection.new(-2, 0, target.resource.id, 0), false)
+		else:
+			targetResource._startingNode.outputs[0] = -1
 	for node in targetResource._graphData:
 		for index in node.outputs.size():
 			if node.outputs[index] == -1: continue
 			var target := find_node_from_id(node.outputs[index])
 			if target != null:
-				create_connection_action(Connection.new(node.id, index, target.id, 0), false)
+				create_connection_action(Connection.new(node.id, index, target.resource.id, 0), false)
 
 
 func set_target(node: StateMachineNode):
@@ -177,15 +161,17 @@ func on_states_added(ids: Array[int]):
 
 func on_states_deleted(ids: Array[int]):
 	for node: StateNode in graph.get_children():
-		if node.resource.id in ids:
-			delete_node_no_undo(node.id)
+		if node.resource.state == null: continue
+		if node.resource.state.id in ids:
+			delete_node_no_undo(node.resource.id)
 	populate_item_list()
 
 
 func on_state_change_name(id: int):
 	for node in graph.get_children():
-		if node.resource.id == id:
-			node.title = targetResource._find_state_from_id(id).name
+		if node.resource.state == null: continue
+		if node.resource.state.id == id:
+			node.title = node.resource.state.name
 	populate_item_list()
 
 
@@ -194,10 +180,10 @@ func on_state_change_script(id: int):
 	if not state.is_valid(): 
 		on_states_deleted([id])
 		return
-	var states := targetResource.get_valid_states()
 	for node in graph.get_children():
 		if node.resource.id == id:
-			prune_excess_connections(node, node.resource.exitEvents.size())
+			node.resource.recalculate_script_data()
+			prune_excess_connections(node, node.resource.outputs.size())
 			node.reconfigure()
 	populate_item_list()
 
@@ -206,7 +192,7 @@ func prune_excess_connections(node: StateNode, newOutputSize: int):
 	for connection in graph.get_connection_list():
 		if connection['from_node'] == node.name and connection["from_port"] >= newOutputSize:
 			var to_node := find_node_from_name(connection['to_node'])
-			var oldConn := Connection.new(node.id, connection['from_port'], to_node.id, connection['to_port'])
+			var oldConn := Connection.new(node.resource.id, connection['from_port'], to_node.resource.id, connection['to_port'])
 			delete_connection_action(oldConn)
 
 
@@ -224,18 +210,13 @@ func populate_item_list():
 		item_ids.append(state.id)
 
 
-func update_resource_from_id(id: int):
-	var node := find_node_from_id(id)
-	targetResource._update_graph_node(node)
-
-
 #region Graph API
 func on_connection(from_node: StringName, from_port: int, to_node: StringName, to_port: int):
-	create_connection(Connection.new(find_node_from_name(from_node).id, from_port, find_node_from_name(to_node).id, to_port))
+	create_connection(Connection.new(find_node_from_name(from_node).resource.id, from_port, find_node_from_name(to_node).resource.id, to_port))
 
 
 func on_disconnection(from_node: StringName, from_port: int, to_node: StringName, to_port: int):
-	delete_connection(Connection.new(find_node_from_name(from_node).id, from_port, find_node_from_name(to_node).id, to_port))
+	delete_connection(Connection.new(find_node_from_name(from_node).resource.id, from_port, find_node_from_name(to_node).resource.id, to_port))
 
 
 var selected_nodes: Array[StateNode] = []
@@ -249,17 +230,17 @@ func on_node_deselected(node: Node):
 
 func set_selection(ids: Array[int]):
 	for node in graph.get_children():
-		if node.id in ids:
+		if node.resource.id in ids:
 			node.selected = true
 		else:
 			node.selected = false
 
 
 func duplicate_selection():
-	var dupList: Array[ClipboardNode] = []
+	var dupList: Array[StateMachine.NodeData] = []
 	for node in selected_nodes:
-		if node.id == -1: continue
-		dupList.append(ClipboardNode.new(node.id, node.position_offset, node.resource.id, node.outputs, node.properties))
+		if node.resource.id == -1: continue
+		dupList.append(node.resource)
 	duplicate_nodes(dupList, Vector2(10, 10))
 
 
@@ -267,16 +248,14 @@ func on_delete_request(nodes: Array[StringName]):
 	var nodeIDs: Array[int] = []
 	for node: String in nodes:
 		if graph.has_node(node):
-			nodeIDs.append(find_node_from_name(node).id)
-	if nodeIDs.is_empty(): return
+			nodeIDs.append(find_node_from_name(node).resource.id)
 	delete_nodes(nodeIDs)
 
 
 func on_delete_selection():
 	var nodeIDs: Array[int] = []
 	for node: StateNode in selected_nodes:
-		nodeIDs.append(node.id)
-	if nodeIDs.is_empty(): return
+		nodeIDs.append(node.resource.id)
 	delete_nodes(nodeIDs)
 
 
@@ -288,7 +267,7 @@ func on_mouse_interaction(pos: Vector2):
 
 
 func on_connection_to_empty(from_node: StringName, from_port: int, release_position: Vector2):
-	inputNodeID = find_node_from_name(from_node).id
+	inputNodeID = find_node_from_name(from_node).resource.id
 	inputNodePort = from_port
 	inputNodeRequest = true
 	on_popup_request()
@@ -350,7 +329,8 @@ func create_node():
 	while find_node_from_id(nodeIDCounter) != null:
 		nodeIDCounter += 1
 	var newID = nodeIDCounter
-	undoRedo.add_do_method(self, "create_node_action", selectedItem, (graph.scroll_offset + mouse_pos) / graph.zoom, newID, {})
+	var newRes := targetResource._create_node_resource(newID, selectedItem, (graph.scroll_offset + mouse_pos) / graph.zoom)
+	undoRedo.add_do_method(self, "create_node_action", newRes)
 	var newIDcontainer: Array[int] = [newID]
 	undoRedo.add_do_method(self, "set_selection", newIDcontainer)
 	if inputNodeRequest:
@@ -363,6 +343,7 @@ func create_node():
 
 
 func delete_nodes(ids: Array[int], is_cut: bool = false):
+	if ids.is_empty(): return
 	undoRedo.create_action("%s state(s)" % ("Cut" if is_cut else "Delete"))
 	ids.erase(-1)
 	var connections: Array[Connection] = []
@@ -370,8 +351,8 @@ func delete_nodes(ids: Array[int], is_cut: bool = false):
 		var node := find_node_from_id(id)
 		for connection in graph.get_connection_list():
 			if connection['from_node'] == node.name or connection['to_node'] == node.name:
-				var from_node_id := find_node_from_name(connection['from_node']).id
-				var to_node_id := find_node_from_name(connection['to_node']).id
+				var from_node_id := find_node_from_name(connection['from_node']).resource.id
+				var to_node_id := find_node_from_name(connection['to_node']).resource.id
 				var newConn: Connection = Connection.new(from_node_id, connection['from_port'], to_node_id, connection['to_port'])
 				undoRedo.add_do_method(self, "delete_connection_action", newConn)
 				if not newConn.is_connection_in_array(connections):
@@ -379,7 +360,7 @@ func delete_nodes(ids: Array[int], is_cut: bool = false):
 	for id in ids:
 		var node := find_node_from_id(id)
 		undoRedo.add_do_method(self, "delete_node_action", id)
-		undoRedo.add_undo_method(self, "create_node_action", node.resource.id, node.position_offset, id, node.properties)
+		undoRedo.add_undo_method(self, "create_node_action", node.resource)
 	for connection in connections:
 		undoRedo.add_undo_method(self, "create_connection_action", connection)
 	undoRedo.commit_action()
@@ -413,77 +394,72 @@ func delete_connection(conn: Connection):
 func begin_move_node():
 	undoRedo.create_action("Move state(s)")
 	for node in selected_nodes:
-		undoRedo.add_undo_method(self, "move_node_action", node.id, node.position_offset)
+		undoRedo.add_undo_method(self, "move_node_action", node.resource.id, node.position_offset)
 
 
 func end_move_node():
 	for node in selected_nodes:
-		undoRedo.add_do_method(self, "move_node_action", node.id, node.position_offset)
-		targetResource._update_graph_node(node)
+		undoRedo.add_do_method(self, "move_node_action", node.resource.id, node.position_offset)
+		node.resource.pos = node.position_offset
 	undoRedo.commit_action(false)
+	targetResource._save_resource()
 
 
 func move_node_action(id: int, pos: Vector2):
 	var node := find_node_from_id(id)
 	node.position_offset = pos
+	node.resource.pos = node.position_offset
+	targetResource._save_resource()
 
 
-func create_node_action(stateID: int, pos: Vector2, id: int, exports: Dictionary = {}, update_data: bool = true) -> StateNode:
-	if find_node_from_id(id) != null: 
+func create_node_action(resource: StateMachine.NodeData):
+	if find_node_from_id(resource.id) != null: 
 		push_error("Duplicated id when creating a node, if you see this report it as a bug")
-	var states := targetResource.get_valid_states()
-	var state := targetResource._find_state_from_id(stateID)
-	if state == null or not state.is_valid(): 
-		push_error("Attempted to create node of invalid state %s" % state)
+	if resource.state == null or not resource.state.is_valid(): 
+		push_error("Attempted to create node of invalid state %s" % resource.state)
 		return
-	var newNode := StateNode.create(id, state, pos)
+	targetResource._add_node_resource(resource)
+	var newNode := StateNode.create(resource)
 	graph.add_child(newNode)
-	newNode.internal_var_updated.connect(update_resource_from_id.bind(newNode.id))
-	for export in exports.values():
-		if export.dirty:
-			newNode.force_property_update(export.value, export.name)
-	if update_data:
-		targetResource._update_graph_node(newNode)
-	return newNode
+	newNode.internal_var_updated.connect(targetResource._save_resource)
 
 
 func delete_node_no_undo(id: int):
 	var node := find_node_from_id(id)
 	for connection in graph.get_connection_list():
 		if connection['from_node'] == node.name or connection['to_node'] == node.name:
-			var from_node_id := find_node_from_name(connection['from_node']).id
-			var to_node_id := find_node_from_name(connection['to_node']).id
+			var from_node_id := find_node_from_name(connection['from_node']).resource.id
+			var to_node_id := find_node_from_name(connection['to_node']).resource.id
 			var newConn: Connection = Connection.new(from_node_id, connection['from_port'], to_node_id, connection['to_port'])
 			delete_connection_action(newConn, false)
 	delete_node_action(id)
 
 
-func delete_node_action(id: int, update_data: bool = true):
+func delete_node_action(id: int):
 	var node := find_node_from_id(id)
-	if node.id == -2: return
+	if node.resource.id == -2: return
 	node.queue_free()
 	if node in selected_nodes:
 		selected_nodes.erase(node)
-	if update_data:
-		targetResource._delete_graph_node(node.id)
+	targetResource._delete_node_resource(node.resource.id)
 
 
 func create_connection_action(conn: Connection, update_data: bool = true):
 	var from_node := find_node_from_id(conn.from_node)
 	var to_node := find_node_from_id(conn.to_node)
 	graph.connect_node(from_node.name, conn.from_port, to_node.name, conn.to_port)
-	from_node.outputs[conn.from_port] = conn.to_node
+	from_node.resource.outputs[conn.from_port] = conn.to_node
 	if update_data:
-		targetResource._update_graph_node(from_node)
+		targetResource._save_resource()
 
 
 func delete_connection_action(conn: Connection, update_data: bool = true):
 	var from_node := find_node_from_id(conn.from_node)
 	var to_node := find_node_from_id(conn.to_node)
 	graph.disconnect_node(from_node.name, conn.from_port, to_node.name, conn.to_port)
-	from_node.outputs[conn.from_port] = -1
+	from_node.resource.outputs[conn.from_port] = -1
 	if update_data:
-		targetResource._update_graph_node(from_node)
+		targetResource._save_resource()
 #endregion
 
 
@@ -491,12 +467,12 @@ func delete_connection_action(conn: Connection, update_data: bool = true):
 func copy(delete: bool):
 	clipboard.clear()
 	for node in selected_nodes:
-		if node.id == -1: continue
-		clipboard.append(ClipboardNode.new(node.id, node.position_offset, node.resource.id, node.outputs, node.properties))
+		if node.resource.id == -1: continue
+		clipboard.append(node.resource.duplicate())
 	if delete:
 		var ids: Array[int] = []
 		for node in selected_nodes:
-			ids.append(node.id)
+			ids.append(node.resource.id)
 		delete_nodes(ids, true)
 
 
@@ -519,19 +495,21 @@ func paste():
 
 
 #region Advanced Actions
-func duplicate_nodes(nodes: Array[ClipboardNode], offset: Vector2, is_paste: bool = false):
+func duplicate_nodes(nodes: Array[StateMachine.NodeData], offset: Vector2, is_paste: bool = false):
 	if nodes.is_empty(): return
 	var idMappings := {}
 	var newIDs: Array[int] = []
 	undoRedo.create_action("%s state(s)" % ("Paste" if is_paste else "Duplicate"))
 	for clNode in nodes:
+		var newNode := clNode.duplicate()
 		while find_node_from_id(nodeIDCounter) != null or nodeIDCounter in newIDs:
 			nodeIDCounter += 1
-		var newID = nodeIDCounter
-		var newPos := clNode.pos - (get_clipboard_rect().position if is_paste else Vector2.ZERO)
-		undoRedo.add_do_method(self, "create_node_action", clNode.type, newPos + offset, newID, clNode.properties)
-		idMappings[clNode.id] = newID
-		newIDs.append(newID)
+		newNode.id = nodeIDCounter
+		newNode.pos -= (get_clipboard_rect().position if is_paste else Vector2.ZERO)
+		newNode.pos += offset
+		undoRedo.add_do_method(self, "create_node_action", newNode)
+		idMappings[clNode.id] = newNode.id
+		newIDs.append(newNode.id)
 	undoRedo.add_do_method(self, "set_selection", newIDs)
 	for clNode in nodes:
 		for index in clNode.outputs.size():
@@ -547,7 +525,7 @@ func duplicate_nodes(nodes: Array[ClipboardNode], offset: Vector2, is_paste: boo
 
 func find_node_from_id(nodeID: int) -> StateNode:
 	for node in graph.get_children():
-		if node.id == nodeID: return node
+		if node.resource.id == nodeID: return node
 	return null
 
 
