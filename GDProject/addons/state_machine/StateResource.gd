@@ -3,6 +3,7 @@ class_name StateResource extends Resource
 
 signal _name_updated
 signal _script_updated
+signal _color_updated
 
 
 @export var scriptResource: Script:
@@ -15,8 +16,12 @@ signal _script_updated
 	set(value):
 		if name == value: return
 		name = value
-		
 		_name_updated.emit()
+
+@export var connectionColor: Color = Color.WHITE:
+	set(value):
+		connectionColor = value
+		_color_updated.emit()
 
 
 var id: int = -1

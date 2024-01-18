@@ -37,12 +37,14 @@ var targetResource: StateMachine = null:
 			targetResource._states_deleted.disconnect(on_states_deleted)
 			targetResource._state_name_changed.disconnect(on_state_change_name)
 			targetResource._state_script_changed.disconnect(on_state_change_script)
+			targetResource._state_color_changed.disconnect(on_state_change_color)
 		targetResource = value
 		if targetResource != null: 
 			targetResource._states_added.connect(on_states_added)
 			targetResource._states_deleted.connect(on_states_deleted)
 			targetResource._state_name_changed.connect(on_state_change_name)
 			targetResource._state_script_changed.connect(on_state_change_script)
+			targetResource._state_color_changed.connect(on_state_change_color)
 		if is_node_ready(): configure()
 
 var undoRedo: EditorUndoRedoManager
@@ -188,6 +190,13 @@ func on_state_change_script(id: int):
 	populate_item_list()
 
 
+func on_state_change_color(id: int):
+	for node in graph.get_children():
+		if node.resource.state == null: continue
+		if node.resource.state.id == id:
+			node.update_colors()
+
+
 func prune_excess_connections(node: StateNode, newOutputSize: int):
 	for connection in graph.get_connection_list():
 		if connection['from_node'] == node.name and connection["from_port"] >= newOutputSize:
@@ -275,7 +284,7 @@ func on_connection_to_empty(from_node: StringName, from_port: int, release_posit
 
 
 func on_context_request():
-	var shouldDisable: bool = selected_nodes.size() == 1 and selected_nodes[0].id == -2
+	var shouldDisable: bool = selected_nodes.size() == 1 and selected_nodes[0].resource.id == -2
 	$PopupMenu.set_item_disabled(2, shouldDisable)
 	$PopupMenu.set_item_disabled(3, shouldDisable)
 	$PopupMenu.set_item_disabled(4, clipboard.is_empty())

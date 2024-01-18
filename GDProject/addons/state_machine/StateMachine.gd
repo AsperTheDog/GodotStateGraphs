@@ -6,6 +6,7 @@ signal _states_added(ids: Array[int])
 
 signal _state_name_changed(id: int)
 signal _state_script_changed(id: int)
+signal _state_color_changed(id: int)
 
 class NodeData:
 	var id: int
@@ -69,12 +70,14 @@ class NodeData:
 					elem.id = stateIDcounter
 				elem._name_updated.connect(_on_state_name_changed.bind(elem.id))
 				elem._script_updated.connect(_on_state_script_changed.bind(elem.id))
+				elem._color_updated.connect(_on_state_color_changed.bind(elem.id))
 				added.append(elem.id)
 		var deleted: Array[int] = []
 		for elem in states:
 			if not elem in value and elem != null:
 				elem._name_updated.disconnect(_on_state_name_changed)
 				elem._script_updated.disconnect(_on_state_script_changed)
+				elem._color_updated.disconnect(_on_state_color_changed.bind(elem.id))
 				deleted.append(elem.id)
 		states = value
 		if not added.is_empty(): _states_added.emit(added)
@@ -145,6 +148,10 @@ func _on_state_name_changed(id: int):
 
 func _on_state_script_changed(id: int):
 	_state_script_changed.emit(id)
+
+
+func _on_state_color_changed(id: int):
+	_state_color_changed.emit(id)
 
 
 func get_valid_states() -> Array[StateResource]:

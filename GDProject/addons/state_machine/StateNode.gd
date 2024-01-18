@@ -26,11 +26,10 @@ func configure():
 	for event in resource.state.exitEvents:
 		add_child(_get_event_label(event))
 		set_slot_enabled_right(counter, true)
-		set_slot_color_right(counter, Color.DEEP_SKY_BLUE)
 		counter += 1
 	set_slot_enabled_left(0, true)
-	set_slot_color_left(0, Color.ROYAL_BLUE)
 	_add_exports()
+	update_colors()
 
 
 func configure_starting():
@@ -58,18 +57,28 @@ func reconfigure():
 	for event in resource.state.exitEvents:
 		add_child(_get_event_label(event))
 		set_slot_enabled_right(counter, true)
-		set_slot_color_right(counter, Color.DEEP_SKY_BLUE)
 		counter += 1
 	set_slot_enabled_left(0, true)
-	set_slot_color_left(0, Color.ROYAL_BLUE)
 	if resource.exports.is_empty():
 		custom_minimum_size.x = 150
 	else:
-		custom_minimum_size.x = 250
+		custom_minimum_size.x = 280
 	_add_exports()
+	update_colors()
+	force_node_refresh()
+
+
+func force_node_refresh():
 	position_offset += Vector2.ONE
 	position_offset -= Vector2.ONE
-	
+
+
+func update_colors():
+	for index in get_child_count():
+		if is_slot_enabled_left(index): set_slot_color_left(index, resource.state.connectionColor)
+		if is_slot_enabled_right(index): set_slot_color_right(index, resource.state.connectionColor)
+	force_node_refresh()
+
 
 func _set_container():
 	var hbox := get_titlebar_hbox()

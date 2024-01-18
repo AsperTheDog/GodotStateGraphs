@@ -12,6 +12,29 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("1_as0og")
 
+[node name="GraphEdit" type="GraphEdit" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+right_disconnects = true
+show_zoom_label = true
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -132.0
+offset_top = 11.0
+offset_right = -15.0
+offset_bottom = 42.0
+grow_horizontal = 0
+text = "Reload scripts"
+
 [node name="newNodePop" type="ConfirmationDialog" parent="."]
 title = "Add state"
 size = Vector2i(200, 330)
@@ -54,29 +77,6 @@ item_7/id = 7
 item_7/separator = true
 item_8/text = "Clear Copy Buffer"
 item_8/id = 8
-
-[node name="Button" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -132.0
-offset_top = 11.0
-offset_right = -15.0
-offset_bottom = 42.0
-grow_horizontal = 0
-text = "Reload scripts"
-
-[node name="GraphEdit" type="GraphEdit" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-right_disconnects = true
-show_zoom_label = true
 
 [node name="ColorRect" type="ColorRect" parent="."]
 visible = false
