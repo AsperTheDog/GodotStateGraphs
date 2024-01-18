@@ -5,6 +5,13 @@ signal internal_var_updated
 
 var resource: StateMachine.NodeData
 
+var workingDir: String = get_script().resource_path.get_base_dir()
+var icons: Dictionary = {
+	"frame": load(workingDir + "/icons/Reload.svg"),
+	"enter": load(workingDir + "/icons/onEnter.svg"),
+	"exit": load(workingDir + "/icons/onExit.svg")
+}
+
 
 func _get_event_label(event) -> Label:
 	var field := Label.new()
@@ -19,9 +26,9 @@ func _get_event_label(event) -> Label:
 func configure():
 	_set_container()
 	if resource.exports.is_empty():
-		custom_minimum_size.x = 150
+		custom_minimum_size.x = 200
 	else:
-		custom_minimum_size.x = 250
+		custom_minimum_size.x = 300
 	var counter: int = 0
 	for event in resource.state.exitEvents:
 		add_child(_get_event_label(event))
@@ -45,6 +52,7 @@ func configure_starting():
 
 func reconfigure():
 	title = resource.state.name
+	add_container_icons()
 	var counter: int = 0
 	for node in get_children():
 		set_slot_enabled_right(counter, false)
@@ -60,9 +68,9 @@ func reconfigure():
 		counter += 1
 	set_slot_enabled_left(0, true)
 	if resource.exports.is_empty():
-		custom_minimum_size.x = 150
+		custom_minimum_size.x = 200
 	else:
-		custom_minimum_size.x = 280
+		custom_minimum_size.x = 300
 	_add_exports()
 	update_colors()
 	force_node_refresh()
@@ -80,11 +88,48 @@ func update_colors():
 	force_node_refresh()
 
 
+func add_container_icons():
+	var hbox := get_titlebar_hbox()
+	var icon := TextureRect.new()
+	icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	icon.size_flags_horizontal = Control.SIZE_SHRINK_END
+	icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	if hbox.has_node("onEnterIcon"): 
+		var node := hbox.get_node("onEnterIcon")
+		hbox.remove_child(node)
+		node.queue_free()
+	if hbox.has_node("onExitIcon"): 
+		var node := hbox.get_node("onExitIcon")
+		hbox.remove_child(node)
+		node.queue_free()
+	if hbox.has_node("onFrameIcon"): 
+		var node := hbox.get_node("onFrameIcon")
+		hbox.remove_child(node)
+		node.queue_free()
+	if resource.state.hasOnEnter:
+		var newIcon := icon.duplicate()
+		newIcon.texture = icons["enter"]
+		newIcon.name = "onEnterIcon"
+		hbox.add_child(newIcon)
+	if resource.state.hasOnExit:
+		var newIcon := icon.duplicate()
+		newIcon.texture = icons["exit"]
+		newIcon.name = "onExitIcon"
+		hbox.add_child(newIcon)
+	if resource.state.hasOnFrame:
+		var newIcon := icon.duplicate()
+		newIcon.texture = icons["frame"]
+		newIcon.name = "onFrameIcon"
+		hbox.add_child(newIcon)
+
+
 func _set_container():
 	var hbox := get_titlebar_hbox()
 	var titleLabel: Label = hbox.get_child(0)
 	titleLabel.label_settings = LabelSettings.new()
 	titleLabel.label_settings.outline_size = 1
+	titleLabel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if resource.state != null: add_container_icons()
 
 
 func _add_exports():

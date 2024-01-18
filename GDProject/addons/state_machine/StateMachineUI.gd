@@ -183,7 +183,8 @@ func on_state_change_script(id: int):
 		on_states_deleted([id])
 		return
 	for node in graph.get_children():
-		if node.resource.id == id:
+		if node.resource.state == null: continue
+		if node.resource.state.id == id:
 			node.resource.recalculate_script_data()
 			prune_excess_connections(node, node.resource.outputs.size())
 			node.reconfigure()
@@ -382,7 +383,7 @@ func create_connection(conn: Connection):
 	var connections: Array[Connection] = []
 	for line in graph.get_connection_list():
 		if line['from_port'] == conn.from_port and line['from_node'] == from_node_name:
-			var conn_to_node_id = find_node_from_name(line['to_node']).id
+			var conn_to_node_id = find_node_from_name(line['to_node']).resource.id
 			var oldConn := Connection.new(conn.from_node, line['from_port'], conn_to_node_id, line['to_port'])
 			undoRedo.add_do_method(self, "delete_connection_action", oldConn)
 			connections.append(oldConn)

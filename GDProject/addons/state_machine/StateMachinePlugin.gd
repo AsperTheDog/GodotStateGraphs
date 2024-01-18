@@ -1,7 +1,8 @@
 @tool
 extends EditorPlugin
 
-var smUI: Control = preload("res://addons/state_machine/StateMachineUI.tscn").instantiate()
+var workingDir: String = get_script().resource_path.get_base_dir()
+var smUI: Control = load(workingDir + "/StateMachineUI.tscn").instantiate()
 
 
 func _enter_tree():

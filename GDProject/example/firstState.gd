@@ -5,7 +5,7 @@ enum ExitEvents {
 	Second
 }
 
-@export var customText: String
+@export var customText: String = "cambiado"
 
 var counter := 0.0
 
