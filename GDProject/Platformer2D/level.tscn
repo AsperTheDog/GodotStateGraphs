@@ -1,0 +1,117 @@
+[gd_scene load_steps=4 format=3 uid="uid://cy7csbvv6sp6x"]
+
+[ext_resource type="PackedScene" uid="uid://xsvok6kkmkwk" path="res://Platformer2D/character/character.tscn" id="1_xjn4u"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_fiwax"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3gi7n"]
+size = Vector2(2233, 25)
+
+[node name="Level" type="Node2D"]
+
+[node name="floor" type="Node2D" parent="."]
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="floor"]
+modulate = Color(1, 0, 1, 1)
+position = Vector2(-69.75, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D2" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 0, 1, 1)
+position = Vector2(70.2499, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D3" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 1, 1)
+position = Vector2(209.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D4" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 0, 1)
+position = Vector2(348.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D5" type="MeshInstance2D" parent="floor"]
+modulate = Color(1, 0, 1, 1)
+position = Vector2(488.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D6" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 0, 1, 1)
+position = Vector2(628.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D7" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 1, 1)
+position = Vector2(767.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D8" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 0, 1)
+position = Vector2(906.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D9" type="MeshInstance2D" parent="floor"]
+modulate = Color(1, 0, 1, 1)
+position = Vector2(1046.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D10" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 0, 1, 1)
+position = Vector2(1186.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D11" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 1, 1)
+position = Vector2(1325.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D12" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 0, 1)
+position = Vector2(1464.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D13" type="MeshInstance2D" parent="floor"]
+modulate = Color(1, 0, 1, 1)
+position = Vector2(1604.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D14" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 0, 1, 1)
+position = Vector2(1744.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D15" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 1, 1)
+position = Vector2(1883.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="MeshInstance2D16" type="MeshInstance2D" parent="floor"]
+modulate = Color(0, 1, 0, 1)
+position = Vector2(2022.25, 635.25)
+scale = Vector2(140.5, 24.5)
+mesh = SubResource("QuadMesh_fiwax")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="floor"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="floor/StaticBody2D"]
+position = Vector2(976.5, 635.5)
+shape = SubResource("RectangleShape2D_3gi7n")
+
+[node name="Character" parent="." instance=ExtResource("1_xjn4u")]
+position = Vector2(355, 454)

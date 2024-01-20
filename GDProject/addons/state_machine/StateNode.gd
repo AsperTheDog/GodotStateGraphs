@@ -28,13 +28,14 @@ func configure():
 	if resource.exports.is_empty():
 		custom_minimum_size.x = 200
 	else:
-		custom_minimum_size.x = 300
+		custom_minimum_size.x = 300 if not resource.state.is_jump_state() else 200
 	var counter: int = 0
 	for event in resource.state.exitEvents:
 		add_child(_get_event_label(event))
 		set_slot_enabled_right(counter, true)
 		counter += 1
-	set_slot_enabled_left(0, true)
+	if not resource.state.is_jump_state():
+		set_slot_enabled_left(0, true)
 	_add_exports()
 	update_colors()
 
@@ -66,11 +67,12 @@ func reconfigure():
 		add_child(_get_event_label(event))
 		set_slot_enabled_right(counter, true)
 		counter += 1
-	set_slot_enabled_left(0, true)
+	if not resource.state.is_jump_state():
+		set_slot_enabled_left(0, true)
 	if resource.exports.is_empty():
 		custom_minimum_size.x = 200
 	else:
-		custom_minimum_size.x = 300
+		custom_minimum_size.x = 300 if not resource.state.is_jump_state() else 200
 	_add_exports()
 	update_colors()
 	force_node_refresh()

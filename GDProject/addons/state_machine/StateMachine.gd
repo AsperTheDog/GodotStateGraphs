@@ -84,10 +84,22 @@ class NodeData:
 		if not deleted.is_empty(): _states_deleted.emit(deleted)
 		emit_changed()
 
+var _jumpState: StateResource
 var _startingNode := NodeData.create_starting()
 var _graphData: Array[NodeData] = []
 
+var workingDir: String = get_script().resource_path.get_base_dir()
+
 static var stateIDcounter: int = 0
+
+
+func _init():
+	_jumpState = StateResource.new()
+	_jumpState.id = -3
+	_jumpState.ignoreJumpGuard = true
+	_jumpState.scriptResource = load(workingDir + "/JumpState.gd")
+	_jumpState.name = "JUMP"
+	print(_jumpState)
 
 
 func _create_node_resource(id: int, stateID: int, pos: Vector2) -> NodeData:
@@ -116,6 +128,7 @@ func _delete_node_resource(id: int):
 
 
 func _find_state_from_id(id: int) -> StateResource:
+	if id == -3: return _jumpState
 	for state in states:
 		if state == null: continue
 		if state.id == id:

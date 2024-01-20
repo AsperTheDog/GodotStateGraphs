@@ -126,7 +126,7 @@ func configure():
 	graph.add_child(newStartingNode)
 	var invalid_nodes: Array[int] = []
 	for nodeDataElem in targetResource._graphData:
-		if not nodeDataElem.state in targetResource.get_valid_states():
+		if nodeDataElem.state.id != -3 and not nodeDataElem.state in targetResource.get_valid_states():
 			invalid_nodes.append(nodeDataElem.id)
 			continue
 		create_node_action(nodeDataElem)
@@ -215,6 +215,12 @@ var item_ids: Array[int] = []
 func populate_item_list():
 	$newNodePop/ItemList.clear()
 	item_ids.clear()
+	$newNodePop/ItemList.add_item("JUMP")
+	item_ids.append(-3)
+	$newNodePop/ItemList.add_item("")
+	$newNodePop/ItemList.set_item_selectable(1, false)
+	$newNodePop/ItemList.set_item_disabled(1, true)
+	item_ids.append(-1)
 	for state in targetResource.get_valid_states():
 		$newNodePop/ItemList.add_item(state.name)
 		item_ids.append(state.id)

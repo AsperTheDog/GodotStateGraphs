@@ -1,0 +1,310 @@
+[gd_scene load_steps=38 format=3 uid="uid://xsvok6kkmkwk"]
+
+[ext_resource type="Script" path="res://Platformer2D/character/character.gd" id="1_j0f8t"]
+[ext_resource type="Script" path="res://addons/state_machine/StateMachineNode.gd" id="2_jn26w"]
+[ext_resource type="Script" path="res://addons/state_machine/StateMachine.gd" id="3_i8d86"]
+[ext_resource type="Script" path="res://addons/state_machine/StateResource.gd" id="4_myqua"]
+[ext_resource type="Script" path="res://Platformer2D/character/states/run.gd" id="5_m7i5o"]
+[ext_resource type="Script" path="res://Platformer2D/character/states/horiz.gd" id="5_t0f5v"]
+[ext_resource type="Script" path="res://Platformer2D/character/states/horizTrans.gd" id="6_bsrye"]
+[ext_resource type="Script" path="res://Platformer2D/character/states/jump.gd" id="6_ibc2g"]
+[ext_resource type="Script" path="res://Platformer2D/character/states/idle.gd" id="7_v0y3w"]
+[ext_resource type="Script" path="res://Platformer2D/character/states/fall.gd" id="8_3d2gi"]
+[ext_resource type="Script" path="res://Platformer2D/character/AnimationPlayer.gd" id="11_un0eo"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kw0ex"]
+radius = 9.0
+height = 44.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_f6ktm"]
+
+[sub_resource type="Resource" id="Resource_3u5cd"]
+script = ExtResource("4_myqua")
+scriptResource = ExtResource("5_m7i5o")
+name = "run"
+connectionColor = Color(0.45098, 1, 1, 1)
+id = 1
+
+[sub_resource type="Resource" id="Resource_58exu"]
+script = ExtResource("4_myqua")
+scriptResource = ExtResource("6_ibc2g")
+name = "jump"
+connectionColor = Color(1, 0.627451, 1, 1)
+id = 2
+
+[sub_resource type="Resource" id="Resource_bkdpg"]
+script = ExtResource("4_myqua")
+scriptResource = ExtResource("7_v0y3w")
+name = "idle"
+connectionColor = Color(1, 1, 0.54902, 1)
+id = 3
+
+[sub_resource type="Resource" id="Resource_ecg4i"]
+script = ExtResource("4_myqua")
+scriptResource = ExtResource("8_3d2gi")
+name = "Nodo de ejemplo"
+connectionColor = Color(1, 0.552941, 0.560784, 1)
+id = 6
+
+[sub_resource type="Resource" id="Resource_63peg"]
+script = ExtResource("3_i8d86")
+states = Array[ExtResource("4_myqua")]([SubResource("Resource_3u5cd"), SubResource("Resource_58exu"), SubResource("Resource_bkdpg"), SubResource("Resource_ecg4i")])
+states/starting/position = Vector2(-160, -420)
+states/starting/output = 11
+states/11/type = 3
+states/11/position = Vector2(240, -440)
+states/11/outputs = Array[int]([12, 14, 13])
+states/12/type = 2
+states/12/position = Vector2(1420, -20)
+states/12/outputs = Array[int]([-1])
+states/13/type = 6
+states/13/position = Vector2(840, 200)
+states/13/outputs = Array[int]([12])
+states/13/exports/soyInt = 199.0
+states/13/exports/soyFloat = 1.365
+states/13/exports/soyString = "hola"
+states/14/type = 1
+states/14/position = Vector2(960, -720)
+states/14/outputs = Array[int]([12, 11, -1])
+states/15/type = -3
+states/15/position = Vector2(380, 340)
+states/15/outputs = Array[int]([13])
+
+[sub_resource type="Resource" id="Resource_jd0fn"]
+script = ExtResource("4_myqua")
+scriptResource = ExtResource("5_t0f5v")
+name = "horiz"
+connectionColor = Color(0.839216, 0, 0.709804, 1)
+id = 0
+
+[sub_resource type="Resource" id="Resource_egq3a"]
+script = ExtResource("4_myqua")
+scriptResource = ExtResource("6_bsrye")
+name = "horizTrans"
+connectionColor = Color(0.576471, 0.576471, 1, 1)
+id = 1
+
+[sub_resource type="Resource" id="Resource_708pj"]
+script = ExtResource("3_i8d86")
+states = Array[ExtResource("4_myqua")]([SubResource("Resource_jd0fn"), SubResource("Resource_egq3a")])
+states/starting/position = Vector2(0, 340)
+states/starting/output = 6
+states/6/type = 0
+states/6/position = Vector2(460, 440)
+states/6/outputs = Array[int]([-1, 7, 8])
+states/7/type = 1
+states/7/position = Vector2(1300, 560)
+states/7/outputs = Array[int]([11])
+states/7/exports/targetAxis = 1.0
+states/8/type = 1
+states/8/position = Vector2(1340, 280)
+states/8/outputs = Array[int]([10])
+states/8/exports/targetAxis = -1.0
+states/9/type = 1
+states/9/position = Vector2(1300, 820)
+states/9/outputs = Array[int]([6])
+states/10/type = 0
+states/10/position = Vector2(460, 760)
+states/10/outputs = Array[int]([9, 7, 8])
+states/10/exports/targetAxis = -1.0
+states/11/type = 0
+states/11/position = Vector2(480, 200)
+states/11/outputs = Array[int]([9, 7, 8])
+states/11/exports/targetAxis = 1.0
+
+[sub_resource type="Animation" id="Animation_g4uli"]
+resource_name = "RESET"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance2D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(16, 44)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-2.08616e-07, -3.21865e-06)]
+}
+
+[sub_resource type="Animation" id="Animation_dau8n"]
+resource_name = "run"
+length = 0.4
+loop_mode = 1
+step = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance2D:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(16, 44), Vector2(16, 40), Vector2(16, 44)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance2D:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 2), Vector2(-2.08616e-07, -3.21865e-06)]
+}
+
+[sub_resource type="Animation" id="Animation_d7nm0"]
+resource_name = "jump"
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance2D:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.26, 0.85),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(16, 44), Vector2(16, 50), Vector2(16, 54), Vector2(16, 44)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.26, 0.85),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 3), Vector2(0, 4), Vector2(-2.08616e-07, -3.21865e-06)]
+}
+
+[sub_resource type="Animation" id="Animation_k5owu"]
+resource_name = "idle"
+loop_mode = 1
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance2D:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(16, 44), Vector2(16, 42), Vector2(16, 44)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance2D:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 1), Vector2(-2.08616e-07, -3.21865e-06)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_1bbjf"]
+_data = {
+"RESET": SubResource("Animation_g4uli"),
+"idle": SubResource("Animation_k5owu"),
+"jump": SubResource("Animation_d7nm0"),
+"run": SubResource("Animation_dau8n")
+}
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_6yo0r"]
+animation = &"idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_do05j"]
+animation = &"jump"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_8up3e"]
+animation = &"run"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_r1e57"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_j0bnj"]
+xfade_time = 0.05
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_dmav7"]
+xfade_time = 0.1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_03mnt"]
+xfade_time = 0.1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_msb76"]
+xfade_time = 0.05
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_ad8yo"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_u6i65"]
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_m887p"]
+states/Start/position = Vector2(88, 116)
+states/idle/node = SubResource("AnimationNodeAnimation_6yo0r")
+states/idle/position = Vector2(249.2, 121.6)
+states/jump/node = SubResource("AnimationNodeAnimation_do05j")
+states/jump/position = Vector2(479.6, 163.2)
+states/run/node = SubResource("AnimationNodeAnimation_8up3e")
+states/run/position = Vector2(434, 71.2)
+transitions = ["idle", "jump", SubResource("AnimationNodeStateMachineTransition_r1e57"), "jump", "run", SubResource("AnimationNodeStateMachineTransition_j0bnj"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_dmav7"), "idle", "run", SubResource("AnimationNodeStateMachineTransition_03mnt"), "run", "jump", SubResource("AnimationNodeStateMachineTransition_msb76"), "jump", "idle", SubResource("AnimationNodeStateMachineTransition_ad8yo"), "Start", "idle", SubResource("AnimationNodeStateMachineTransition_u6i65")]
+graph_offset = Vector2(-251, 8)
+
+[node name="Character" type="CharacterBody2D"]
+script = ExtResource("1_j0f8t")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_kw0ex")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+position = Vector2(-2.08616e-07, -3.21865e-06)
+scale = Vector2(16, 44)
+mesh = SubResource("QuadMesh_f6ktm")
+
+[node name="MovementMachine" type="Node" parent="." node_paths=PackedStringArray("customTarget")]
+script = ExtResource("2_jn26w")
+stateMachine = SubResource("Resource_63peg")
+step_rate = 1
+auto_start = false
+customTarget = NodePath("..")
+
+[node name="HorizMachine" type="Node" parent="." node_paths=PackedStringArray("customTarget")]
+script = ExtResource("2_jn26w")
+stateMachine = SubResource("Resource_708pj")
+auto_start = false
+customTarget = NodePath("..")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_1bbjf")
+}
+script = ExtResource("11_un0eo")
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_1bbjf")
+}
+tree_root = SubResource("AnimationNodeStateMachine_m887p")
+anim_player = NodePath("../AnimationPlayer")

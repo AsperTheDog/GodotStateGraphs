@@ -6,6 +6,7 @@ signal _script_updated
 signal _color_updated
 
 
+## The script file containing the custom state 
 @export var scriptResource: Script:
 	set(value):
 		if _check_state(value):
@@ -33,7 +34,12 @@ var hasOnFrame: bool = false
 var exports: Dictionary = {}
 var exitEvents: Array[String] = []
 
+var ignoreJumpGuard: bool = false
+
 static var allowedExports: Array[int] = [TYPE_STRING, TYPE_INT, TYPE_FLOAT, TYPE_BOOL, TYPE_VECTOR2, TYPE_VECTOR3]
+
+var workingDir: String = get_script().resource_path.get_base_dir()
+var jumpStatePath: String = workingDir + "/JumpState.gd"
 
 
 func _init():
@@ -42,6 +48,9 @@ func _init():
 
 func _check_state(stateArg: Script) -> bool:
 	if stateArg == null: return true
+	if not ignoreJumpGuard and is_script_jump_state(stateArg):
+		push_error("The jump state is a reserved internal script that cannot be used as a normal state")
+		return false
 	var elem = stateArg.new()
 	if not elem is State:
 		push_error("The script " + stateArg.resource_path + " does not extend State class")
@@ -98,4 +107,11 @@ func _set(property, value):
 
 func _get_property_list():
 	return [{"name": "id", "type": TYPE_INT, "usage": PROPERTY_USAGE_NO_EDITOR}]
-	
+
+
+func is_script_jump_state(scr: Script):
+	return scr != null and scr.resource_path == jumpStatePath
+
+
+func is_jump_state():
+	return is_script_jump_state(scriptResource)
