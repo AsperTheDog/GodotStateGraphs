@@ -42,7 +42,7 @@ id = 3
 [sub_resource type="Resource" id="Resource_ecg4i"]
 script = ExtResource("4_myqua")
 scriptResource = ExtResource("8_3d2gi")
-name = "Nodo de ejemplo"
+name = "fall"
 connectionColor = Color(1, 0.552941, 0.560784, 1)
 id = 6
 
@@ -58,17 +58,11 @@ states/12/type = 2
 states/12/position = Vector2(1420, -20)
 states/12/outputs = Array[int]([-1])
 states/13/type = 6
-states/13/position = Vector2(840, 200)
+states/13/position = Vector2(820, 140)
 states/13/outputs = Array[int]([12])
-states/13/exports/soyInt = 199.0
-states/13/exports/soyFloat = 1.365
-states/13/exports/soyString = "hola"
 states/14/type = 1
 states/14/position = Vector2(960, -720)
 states/14/outputs = Array[int]([12, 11, -1])
-states/15/type = -3
-states/15/position = Vector2(380, 340)
-states/15/outputs = Array[int]([13])
 
 [sub_resource type="Resource" id="Resource_jd0fn"]
 script = ExtResource("4_myqua")
@@ -81,7 +75,7 @@ id = 0
 script = ExtResource("4_myqua")
 scriptResource = ExtResource("6_bsrye")
 name = "horizTrans"
-connectionColor = Color(0.576471, 0.576471, 1, 1)
+connectionColor = Color(0.388235, 0.658824, 0.890196, 1)
 id = 1
 
 [sub_resource type="Resource" id="Resource_708pj"]
@@ -139,11 +133,10 @@ tracks/1/keys = {
 "values": [Vector2(-2.08616e-07, -3.21865e-06)]
 }
 
-[sub_resource type="Animation" id="Animation_dau8n"]
-resource_name = "run"
-length = 0.4
+[sub_resource type="Animation" id="Animation_k5owu"]
+resource_name = "idle"
 loop_mode = 1
-step = 0.001
+step = 0.01
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -151,10 +144,10 @@ tracks/0/path = NodePath("MeshInstance2D:scale")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.4),
+"times": PackedFloat32Array(0, 0.5, 1),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector2(16, 44), Vector2(16, 40), Vector2(16, 44)]
+"values": [Vector2(16, 44), Vector2(16, 42), Vector2(16, 44)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -163,10 +156,10 @@ tracks/1/path = NodePath("MeshInstance2D:position")
 tracks/1/interp = 2
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.4),
+"times": PackedFloat32Array(0, 0.5, 1),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 2), Vector2(-2.08616e-07, -3.21865e-06)]
+"values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 1), Vector2(-2.08616e-07, -3.21865e-06)]
 }
 
 [sub_resource type="Animation" id="Animation_d7nm0"]
@@ -197,10 +190,11 @@ tracks/1/keys = {
 "values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 3), Vector2(0, 4), Vector2(-2.08616e-07, -3.21865e-06)]
 }
 
-[sub_resource type="Animation" id="Animation_k5owu"]
-resource_name = "idle"
+[sub_resource type="Animation" id="Animation_dau8n"]
+resource_name = "run"
+length = 0.4
 loop_mode = 1
-step = 0.01
+step = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -208,10 +202,10 @@ tracks/0/path = NodePath("MeshInstance2D:scale")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.5, 1),
+"times": PackedFloat32Array(0, 0.2, 0.4),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector2(16, 44), Vector2(16, 42), Vector2(16, 44)]
+"values": [Vector2(16, 44), Vector2(16, 40), Vector2(16, 44)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -220,10 +214,10 @@ tracks/1/path = NodePath("MeshInstance2D:position")
 tracks/1/interp = 2
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.5, 1),
+"times": PackedFloat32Array(0, 0.2, 0.4),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 1), Vector2(-2.08616e-07, -3.21865e-06)]
+"values": [Vector2(-2.08616e-07, -3.21865e-06), Vector2(0, 2), Vector2(-2.08616e-07, -3.21865e-06)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_1bbjf"]

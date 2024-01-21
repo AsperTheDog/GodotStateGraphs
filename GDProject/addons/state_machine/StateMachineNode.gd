@@ -2,8 +2,11 @@
 class_name StateMachineNode extends Node
 ## A node used to store and execute State Machines
 ##
-## The State Machine Node is used to manage a State Machine. Through it you can assign States and
-## generate a graph of nodes that executes custom behavior on 
+## The State Machine Node is used to manage a State Machine. To create these just add a [StateNode]
+## to it and populate the list of custom states (For information about how to do it see [State]).
+## [br][br]
+## When an instance of this node is selected a dock will appear at the bottom. Through this dock you
+## can edit the state machine.
 
 ## Called when [member stateMachine] is changed. This is used mainly for internal
 ## detection, but is available externally too if needed. The signal will [b]not[/b] be called
@@ -146,12 +149,12 @@ func reset(ignore_auto: bool = false):
 
 
 ## Manually forces an evaluation in the State Machine. An evaluation has the following steps:[br]
-##[br] - Call [method State._on_check] and retrive the return value.
-##[br] - If the return value is a valid output value and the connected node is valid, execute 
+##[br]1. Call [method State._on_check] and retrive the return value.
+##[br]2. If the return value is a valid output value and the connected node is valid, execute 
 ## [method State._on_exit], set the new node to the returned node and call [method Node._on_enter].
-##[br] - If the return value is a valid output value but no valid node is connected to that 
+##[br]3. If the return value is a valid output value but no valid node is connected to that 
 ## output, the State Machine halts (see [method halt]).
-##[br] - If the return value is not a valid value or [member frame_on_transition] is true, 
+##[br]4. If the return value is not a valid value or [member frame_on_transition] is true, 
 ## call [method State._on_frame].
 func evaluate():
 	_evaluate()

@@ -1,11 +1,6 @@
 extends State
 
-enum ExitEvents { terminado }
-
-@export var soyInt: int
-@export var soyFloat: float
-@export var soyString: String
-@export var soyBool: bool
+enum ExitEvents { landed }
 
 
 func _on_enter(_stateMachine: StateMachineNode):
@@ -14,7 +9,7 @@ func _on_enter(_stateMachine: StateMachineNode):
 
 func _on_check(stateMachine: StateMachineNode):
 	if stateMachine.customTarget.is_on_floor():
-		return ExitEvents.terminado
+		return ExitEvents.landed
 
 
 func _on_frame(stateMachine: StateMachineNode):
