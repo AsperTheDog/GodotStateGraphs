@@ -1,5 +1,5 @@
 @tool
-@icon("res://addons/state_machine/icons/GraphEdit.svg")
+@icon("res://addons/state_machine/icons/StateMachineNode.svg")
 class_name StateMachineNode extends Node
 ## A node used to store and execute State Machines
 ##

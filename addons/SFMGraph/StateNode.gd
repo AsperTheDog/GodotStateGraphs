@@ -7,7 +7,7 @@ var resource: StateMachine.NodeData
 
 var workingDir: String = get_script().resource_path.get_base_dir()
 var icons: Dictionary = {
-	"frame": load(workingDir + "/icons/Reload.svg"),
+	"frame": load(workingDir + "/icons/onEval.svg"),
 	"enter": load(workingDir + "/icons/onEnter.svg"),
 	"exit": load(workingDir + "/icons/onExit.svg")
 }
