@@ -17,6 +17,7 @@ class_name State extends RefCounted
 ## (can be done by simply setting it as [code]@export[/code]) will be exposed in a per-node basis in the State
 ## Machine, the behavior being similar to that of the inspector in the Godot Editor. Currently,
 ## only variables of types [String], [int], [float] and [bool] are supported
+## @tutorial (Overview): https://github.com/AsperTheDog/GodotStateGraphs/wiki/Components
 
 ## Name of the state. Set automatically by the State Machine at runtime.
 var state_name: String
@@ -48,5 +49,5 @@ func _on_check(_stateMachine: StateMachineNode):
 ## Override this method to create custom behavior that will be executed on every evaluation while 
 ## this node is active. The variable receives the StateMachineNode currently executing the State 
 ## Machine as argument
-func _on_frame(_stateMachine: StateMachineNode):
+func _on_eval(_stateMachine: StateMachineNode):
 	pass

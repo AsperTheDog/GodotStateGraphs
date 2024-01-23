@@ -59,7 +59,7 @@ func _check_state(stateArg: Script) -> bool:
 		push_error("The script " + stateArg.resource_path + " does not have an ExitEvents enumerator or is empty")
 		return false
 	var hasOnCheck: bool = false
-	var counts := {"_on_check": 0, "_on_enter": 0, "_on_exit": 0, "_on_frame": 0}
+	var counts := {"_on_check": 0, "_on_enter": 0, "_on_exit": 0, "_on_eval": 0}
 	for method in elem.get_method_list():
 		if method['name'] in counts: counts[method['name']] += 1
 		else: continue
@@ -69,7 +69,7 @@ func _check_state(stateArg: Script) -> bool:
 			hasOnEnter = counts[method['name']] == 2
 		if "_on_exit" == method['name']:
 			hasOnExit = counts[method['name']] == 2
-		if "_on_frame" == method['name']:
+		if "_on_eval" == method['name']:
 			hasOnFrame = counts[method['name']] == 2
 	if not hasOnCheck:
 		push_error("The script " + stateArg.resource_path + " does not have the _on_check method overriden")

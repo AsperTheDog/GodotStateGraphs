@@ -1,4 +1,5 @@
 @tool
+@icon("res://addons/state_machine/icons/GraphEdit.svg")
 class_name StateMachineNode extends Node
 ## A node used to store and execute State Machines
 ##
@@ -7,6 +8,7 @@ class_name StateMachineNode extends Node
 ## [br][br]
 ## When an instance of this node is selected a dock will appear at the bottom. Through this dock you
 ## can edit the state machine.
+## @tutorial (Overview): https://github.com/AsperTheDog/GodotStateGraphs/wiki/Components
 
 ## Called when [member stateMachine] is changed. This is used mainly for internal
 ## detection, but is available externally too if needed. The signal will [b]not[/b] be called
@@ -50,9 +52,9 @@ class StateInstance:
 ## When true, the State Machine will automatically reset and start whenever a node requests 
 ## a transition to [code]null[/code]. [br] See also [method start_or_resume] and [method reset].
 @export var auto_restart: bool = false
-## When true, the State Machine will call [method State._on_frame] right after it calls 
+## When true, the State Machine will call [method State._on_eval] right after it calls 
 ## [method State._on_enter]. When false, the State Machine will start calling 
-## [method State._on_frame] in the next evaluation.
+## [method State._on_eval] in the next evaluation.
 @export var frame_on_transition: bool = false
 ## Export variable to attach a desired custom Node to the State Machine. This is useful to have 
 ## access to any node of choice inside the states.
@@ -155,7 +157,7 @@ func reset(ignore_auto: bool = false):
 ##[br]3. If the return value is a valid output value but no valid node is connected to that 
 ## output, the State Machine halts (see [method halt]).
 ##[br]4. If the return value is not a valid value or [member frame_on_transition] is true, 
-## call [method State._on_frame].
+## call [method State._on_eval].
 func evaluate():
 	_evaluate()
 
@@ -184,7 +186,7 @@ func _evaluate():
 		_OutputType.NULL:
 			_transition(null)
 		_OutputType.INVALID:
-			_activeState.base_node._on_frame(self)
+			_activeState.base_node._on_eval(self)
 		_OutputType.VALID:
 			_transition(_activeState.connected_nodes[ret])
 
@@ -196,7 +198,7 @@ func _transition(next: StateInstance, call_on_exit: bool = true, call_on_enter: 
 	if _activeState != null and call_on_enter:
 		_activeState.base_node._on_enter(self)
 		if frame_on_transition:
-			_activeState.base_node._on_frame(self)
+			_activeState.base_node._on_eval(self)
 
 
 func _get_output_type(output) -> _OutputType:
